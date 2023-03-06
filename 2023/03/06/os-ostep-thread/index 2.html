@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>ostep - 线程 - Xinlong-Chen&#039;s blog</title><link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#3273dc"><meta name="application-name" content="Xinlong Chen&#039;s blog"><meta name="msapplication-TileImage" content="/img/avatar3.png"><meta name="msapplication-TileColor" content="#3273dc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Xinlong Chen&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="概述线程（thread），又被称为轻量级进程（Lightweight Process, LWP）是程序执行流的最小单位，也是调度的基本单位。  为什么需要线程？  创建进程的开销较大：包括了数据、代码、堆、栈等 进程的隔离性过强：进程间交互可以通过进程间通信（IPC），但开销较大 进程内部无法支持并行   线程相较于进程，是一种更加轻量级的运行时抽象。  线程只包含运行时的状态：线程执行状态（运行"><meta property="og:type" content="blog"><meta property="og:title" content="ostep - 线程"><meta property="og:url" content="https://xinlong-chen.github.io/2023/03/06/os-ostep-thread/"><meta property="og:site_name" content="Xinlong-Chen&#039;s blog"><meta property="og:description" content="概述线程（thread），又被称为轻量级进程（Lightweight Process, LWP）是程序执行流的最小单位，也是调度的基本单位。  为什么需要线程？  创建进程的开销较大：包括了数据、代码、堆、栈等 进程的隔离性过强：进程间交互可以通过进程间通信（IPC），但开销较大 进程内部无法支持并行   线程相较于进程，是一种更加轻量级的运行时抽象。  线程只包含运行时的状态：线程执行状态（运行"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/06/os-ostep-thread/image-20211013203731845.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/06/os-ostep-thread/image-20211013203222290.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/06/os-ostep-thread/image-20211013204209097.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/06/os-ostep-thread/image-20211013204538367.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/06/os-ostep-thread/image-20211013210629632.png"><meta property="article:published_time" content="2023-03-06T15:53:03.000Z"><meta property="article:modified_time" content="2023-03-06T15:57:26.378Z"><meta property="article:author" content="Xinlong-Chen"><meta property="article:tag" content="ostep"><meta property="article:tag" content="操作系统理论"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://xinlong-chen.github.io/2023/03/06/os-ostep-thread/image-20211013203731845.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://xinlong-chen.github.io/2023/03/06/os-ostep-thread/"},"headline":"ostep - 线程","image":["https://xinlong-chen.github.io/2023/03/06/os-ostep-thread/image-20211013203731845.png","https://xinlong-chen.github.io/2023/03/06/os-ostep-thread/image-20211013203222290.png","https://xinlong-chen.github.io/2023/03/06/os-ostep-thread/image-20211013204209097.png","https://xinlong-chen.github.io/2023/03/06/os-ostep-thread/image-20211013204538367.png","https://xinlong-chen.github.io/2023/03/06/os-ostep-thread/image-20211013210629632.png"],"datePublished":"2023-03-06T15:53:03.000Z","dateModified":"2023-03-06T15:57:26.378Z","author":{"@type":"Person","name":"Xinlong-Chen"},"publisher":{"@type":"Organization","name":"Xinlong-Chen's blog","logo":{"@type":"ImageObject","url":"https://xinlong-chen.github.io/img/avatar3.png"}},"description":"概述线程（thread），又被称为轻量级进程（Lightweight Process, LWP）是程序执行流的最小单位，也是调度的基本单位。  为什么需要线程？  创建进程的开销较大：包括了数据、代码、堆、栈等 进程的隔离性过强：进程间交互可以通过进程间通信（IPC），但开销较大 进程内部无法支持并行   线程相较于进程，是一种更加轻量级的运行时抽象。  线程只包含运行时的状态：线程执行状态（运行"}</script><link rel="canonical" href="https://xinlong-chen.github.io/2023/03/06/os-ostep-thread/"><link rel="icon" href="/img/avatar3.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/avatar3.png" alt="Xinlong-Chen&#039;s blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-03-06T15:53:03.000Z" title="3/6/2023, 11:53:03 PM">2023-03-06</time>发表</span><span class="level-item"><time dateTime="2023-03-06T15:57:26.378Z" title="3/6/2023, 11:57:26 PM">2023-03-06</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></span><span class="level-item">8 分钟读完 (大约1198个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">ostep - 线程</h1><div class="content"><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>线程（thread），又被称为轻量级进程（Lightweight Process, LWP）是程序执行流的最小单位，也是调度的基本单位。</p>
+<blockquote>
+<p>为什么需要线程？</p>
+<ol>
+<li>创建进程的开销较大：包括了数据、代码、堆、栈等</li>
+<li>进程的隔离性过强：进程间交互可以通过进程间通信（IPC），但开销较大</li>
+<li>进程内部无法支持并行</li>
+</ol>
+</blockquote>
+<p>线程相较于进程，是一种更加轻量级的运行时抽象。</p>
+<ul>
+<li><p>线程只包含<strong>运行时的状态</strong>：线程执行状态（运行、就绪等）、线程上下文（PC等寄存器集合）、栈。</p>
+</li>
+<li><p>一个进程可以包含多个线程：多个线程共享同一地址空间。</p>
+</li>
+</ul>
+<span id="more"></span>
+
+<h2 id="多线程进程的地址空间"><a href="#多线程进程的地址空间" class="headerlink" title="多线程进程的地址空间"></a>多线程进程的地址空间</h2><ul>
+<li>每个线程拥有自己的栈。</li>
+<li>内核中也有为线程准备的内核栈。</li>
+<li>其它区域（数据、代码、堆）共享。</li>
+</ul>
+<p><img src="/2023/03/06/os-ostep-thread/image-20211013203731845.png"></p>
+<p><img src="/2023/03/06/os-ostep-thread/image-20211013203222290.png"></p>
+<h2 id="用户态线程与内核态线程"><a href="#用户态线程与内核态线程" class="headerlink" title="用户态线程与内核态线程"></a>用户态线程与内核态线程</h2><p>根据线程是否受内核管理，可以将线程分为两类：</p>
+<ul>
+<li>内核态线程<ul>
+<li>内核可见，受内核管理</li>
+<li>由内核创建，线程相关信息存放在内核中</li>
+</ul>
+</li>
+<li>用户态线程<ul>
+<li>内核不可见，不受内核直接管理</li>
+<li>在应用态创建，线程相关信息主要存放在应用数据中</li>
+</ul>
+</li>
+</ul>
+<p>与内核线程相比，用户态线程更加轻量级，创建开销更小，但功能也较为受限，与内核态相关的操作（系统调用）需要内核态线程协助才能完成。</p>
+<p><img src="/2023/03/06/os-ostep-thread/image-20211013204209097.png"></p>
+<h3 id="线程模型"><a href="#线程模型" class="headerlink" title="线程模型"></a>线程模型</h3><p>线程模型表示了用户态线程与内核态线程之间的联系。</p>
+<ol>
+<li>多对一模型：多个用户态线程对应一个内核态线程</li>
+<li>一对一模型：一个用户态线程对应一个内核态线程</li>
+<li>多对多模型：多个用户态线程对应多个内核态线程</li>
+</ol>
+<p><img src="/2023/03/06/os-ostep-thread/image-20211013204538367.png" alt="image-20211013204538367"></p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>多对一模型</th>
+<th>一对一模型</th>
+<th>多对多模型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>概念</td>
+<td>将多个用户态线程映射给单一的内核线程</td>
+<td>每个用户线程映射单独的内核线程</td>
+<td>N个用户态线程映射到M个内核态线程（N &gt; M）</td>
+</tr>
+<tr>
+<td>优点</td>
+<td>高效的上下文切换和无限制的线程数量<br>内核管理简单</td>
+<td>用户线程和内核线程一致<br>可扩展性好</td>
+<td>解决了可扩展性问题（多对一）和线程过多问题（一对一）</td>
+</tr>
+<tr>
+<td>缺点</td>
+<td>可扩展性差，无法适应多核机器的发展<br>一个用户线程阻塞，导致内核线程阻塞，其他线程也无法执行</td>
+<td>os会限制内核线程数量，因此用户线程数量受到限制<br>内核线程上下文切换开销大</td>
+<td>管理复杂</td>
+</tr>
+<tr>
+<td>实际情况</td>
+<td>在主流操作系统中被弃用<br>用于各种用户态线程库中</td>
+<td>主流操作系统(Windows、Linux、OS X)都采用一对一模型</td>
+<td>在虚拟化中得到了广泛应用</td>
+</tr>
+</tbody></table>
+<h2 id="相关数据结构："><a href="#相关数据结构：" class="headerlink" title="相关数据结构："></a>相关数据结构：</h2><h3 id="TCB-线程控制块"><a href="#TCB-线程控制块" class="headerlink" title="TCB 线程控制块"></a>TCB 线程控制块</h3><p>一对一模型的TCB可以分为两部分</p>
+<ul>
+<li>内核态：与PCB结构类似<ul>
+<li>Linux中进程与线程使用的是同一种数据结构（task_struct） </li>
+<li>上下文切换中会使用</li>
+</ul>
+</li>
+<li>应用态：可以由线程库定义<ul>
+<li>Linux：pthread结构体 </li>
+<li>Windows：TIB（Thread Information Block）</li>
+<li>可以认为是内核TCB的扩展</li>
+</ul>
+</li>
+</ul>
+<h3 id="TLS-线程本地存储"><a href="#TLS-线程本地存储" class="headerlink" title="TLS 线程本地存储"></a>TLS 线程本地存储</h3><p>不同线程可能会执行相同的代码（线程不具有独立的地址空间，多线程共享代码段）。</p>
+<p>对于全局变量，不同线程可能需要不同的拷贝（用于标明系统调用错误的errno）。</p>
+<p>使用TLS可以很方便的实现线程内的全局变量。</p>
+<ul>
+<li><p>线程库允许定义每个线程独有的数据</p>
+<ul>
+<li>__thread int id; 会为每个线程定义一个独有的id变量</li>
+</ul>
+</li>
+<li><p>每个线程的TLS结构相似 </p>
+<ul>
+<li>可通过TCB索引</li>
+</ul>
+</li>
+<li><p>TLS寻址模式：基地址＋偏移量</p>
+<ul>
+<li>X86: 段页式 (fs寄存器) </li>
+<li>AArch64: 特殊寄存器tpidr_el0<br><img src="/2023/03/06/os-ostep-thread/image-20211013210629632.png"></li>
+</ul>
+</li>
+</ul>
+<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a><em>reference</em></h2><p>[1] <a target="_blank" rel="noopener" href="https://ipads.se.sjtu.edu.cn/courses/os/slides/OS-06-2%20process.pdf">上海交通大学并行与分布式系统研究所-进程</a></p>
+<p>[2] <a target="_blank" rel="noopener" href="https://pages.cs.wisc.edu/~remzi/OSTEP/Chinese/26.pdf">操作系统导论（ostep）</a></p>
+<p>[3] 操作系统-精髓与设计原理</p>
+<p>[4] 现代操作系统</p>
+<p>[5] 程序员的自我修养</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>ostep - 线程</p><p><a href="https://xinlong-chen.github.io/2023/03/06/os-ostep-thread/">https://xinlong-chen.github.io/2023/03/06/os-ostep-thread/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Xinlong-Chen</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-03-06</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-03-06</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="" rel="noopener" target="_blank" title="CC BY-NC-SA 4.0" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/ostep/">ostep</a><a class="link-muted mr-2" rel="tag" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%90%86%E8%AE%BA/">操作系统理论</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2023/03/06/math-matrix-10/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">矩阵论 - 10 - 四个基本子空间</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/03/06/os-ostep-process-api/"><span class="level-item">ostep - 进程API</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><script src="https://utteranc.es/client.js" repo="Xinlong-Chen/Xinlong-Chen.github.io" issue-term="pathname" label="some-issue-label" theme="github-light" crossorigin="anonymous" async></script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="/img/avatar2.png" alt="Xinlong Chen"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Xinlong Chen</p><p class="is-size-6 is-block">os | db</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Canton</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">56</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories"><p class="title">9</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags"><p class="title">17</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/Xinlong-Chen" target="_blank" rel="noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/Xinlong-Chen"><i class="fab fa-github"></i></a></div></div></div><!--!--><div class="card widget" data-type="links"><div class="card-content"><div class="menu"><h3 class="menu-label">链接</h3><ul class="menu-list"><li><a class="level is-mobile" href="https://www.cnblogs.com/cxl-" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">cnblog</span></span><span class="level-right"><span class="level-item tag">www.cnblogs.com</span></span></a></li><li><a class="level is-mobile" href="https://blog.csdn.net/hrbust_cxl" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">csdn</span></span><span class="level-right"><span class="level-item tag">blog.csdn.net</span></span></a></li></ul></div></div></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/C/"><span class="level-start"><span class="level-item">C++</span></span><span class="level-end"><span class="level-item tag">22</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">分布式系统</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%89%8D%E7%AB%AF/"><span class="level-start"><span class="level-item">前端</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">操作系统</span></span><span class="level-end"><span class="level-item tag">21</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%95%B0%E5%AD%A6/"><span class="level-start"><span class="level-item">数学</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">数据库系统</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%9D%82%E4%B8%83%E6%9D%82%E5%85%AB/"><span class="level-start"><span class="level-item">杂七杂八</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/%E7%A1%AC%E4%BB%B6/"><span class="level-start"><span class="level-item">硬件</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/"><span class="level-start"><span class="level-item">计算机网络</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></div></div></div><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">最新文章</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-06T15:58:46.000Z">2023-03-06</time></p><p class="title"><a href="/2023/03/06/math-matrix-10/">矩阵论 - 10 - 四个基本子空间</a></p><p class="categories"><a href="/categories/%E6%95%B0%E5%AD%A6/">数学</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-06T15:53:03.000Z">2023-03-06</time></p><p class="title"><a href="/2023/03/06/os-ostep-thread/">ostep - 线程</a></p><p class="categories"><a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-06T15:43:20.000Z">2023-03-06</time></p><p class="title"><a href="/2023/03/06/os-ostep-process-api/">ostep - 进程API</a></p><p class="categories"><a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-06T14:54:29.000Z">2023-03-06</time></p><p class="title"><a href="/2023/03/06/hardware-Raspberry-Pi-ssh/">树莓派 - 开启ssh服务并固定ip</a></p><p class="categories"><a href="/categories/%E7%A1%AC%E4%BB%B6/">硬件</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-06T13:54:29.000Z">2023-03-06</time></p><p class="title"><a href="/2023/03/06/hardware-Raspberry-Pi-self-start/">树莓派 - 树莓派开机自启动</a></p><p class="categories"><a href="/categories/%E7%A1%AC%E4%BB%B6/">硬件</a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">归档</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2023/"><span class="level-start"><span class="level-item">2023</span></span><span class="level-end"><span class="level-item tag">51</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/"><span class="level-start"><span class="level-item">2021</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/cmu15445/"><span class="tag">cmu15445</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cpp/"><span class="tag">cpp</span><span class="tag">10</span></a></div><div class="control"><a class="tags has-addons" href="/tags/debug/"><span class="tag">debug</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/effective-C/"><span class="tag">effective C++</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/hitos/"><span class="tag">hitos</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux0-11/"><span class="tag">linux0.11</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux%E4%BD%BF%E7%94%A8/"><span class="tag">linux使用</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux%E7%BC%96%E7%A8%8B/"><span class="tag">linux编程</span><span class="tag">8</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mit6-824/"><span class="tag">mit6.824</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mit6-s081/"><span class="tag">mit6.s081</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ostep/"><span class="tag">ostep</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/qt/"><span class="tag">qt</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/stl/"><span class="tag">stl</span><span class="tag">10</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%90%86%E8%AE%BA/"><span class="tag">操作系统理论</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%A0%91%E8%8E%93%E6%B4%BE/"><span class="tag">树莓派</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E7%9F%A9%E9%98%B5%E8%AE%BA/"><span class="tag">矩阵论</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/"><span class="tag">网络编程</span><span class="tag">2</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/avatar3.png" alt="Xinlong-Chen&#039;s blog" height="28"></a><p class="is-size-7"><span>&copy; 2023 Xinlong-Chen</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-cn");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/mhchem.min.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>

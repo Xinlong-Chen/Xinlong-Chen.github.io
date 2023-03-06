@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>UNIX环境高级编程 - 文件I/O - 打开/创建/关闭文件 - Xinlong-Chen&#039;s blog</title><link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#3273dc"><meta name="application-name" content="Xinlong Chen&#039;s blog"><meta name="msapplication-TileImage" content="/img/avatar3.png"><meta name="msapplication-TileColor" content="#3273dc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Xinlong Chen&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="函数open和openat12345#include &amp;lt;fcntl.h&amp;gt;int open(const char* path,int oflag,...&amp;#x2F;*mode_t mode*&amp;#x2F;);int openat(int fd,const char*path,int oflag,...&amp;#x2F;*mode_t mode *&amp;#x2F;);"><meta property="og:type" content="blog"><meta property="og:title" content="UNIX环境高级编程 - 文件I/O - 打开/创建/关闭文件"><meta property="og:url" content="https://xinlong-chen.github.io/2023/03/06/linux-file-IO-open-close/"><meta property="og:site_name" content="Xinlong-Chen&#039;s blog"><meta property="og:description" content="函数open和openat12345#include &amp;lt;fcntl.h&amp;gt;int open(const char* path,int oflag,...&amp;#x2F;*mode_t mode*&amp;#x2F;);int openat(int fd,const char*path,int oflag,...&amp;#x2F;*mode_t mode *&amp;#x2F;);"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/06/linux-file-IO-open-close/image-20211104234109277.png"><meta property="article:published_time" content="2023-03-06T06:00:25.000Z"><meta property="article:modified_time" content="2023-03-06T14:51:02.989Z"><meta property="article:author" content="Xinlong-Chen"><meta property="article:tag" content="linux编程"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://xinlong-chen.github.io/2023/03/06/linux-file-IO-open-close/image-20211104234109277.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://xinlong-chen.github.io/2023/03/06/linux-file-IO-open-close/"},"headline":"UNIX环境高级编程 - 文件I/O - 打开/创建/关闭文件","image":["https://xinlong-chen.github.io/2023/03/06/linux-file-IO-open-close/image-20211104234109277.png"],"datePublished":"2023-03-06T06:00:25.000Z","dateModified":"2023-03-06T14:51:02.989Z","author":{"@type":"Person","name":"Xinlong-Chen"},"publisher":{"@type":"Organization","name":"Xinlong-Chen's blog","logo":{"@type":"ImageObject","url":"https://xinlong-chen.github.io/img/avatar3.png"}},"description":"函数open和openat12345#include &lt;fcntl.h&gt;int open(const char* path,int oflag,...&#x2F;*mode_t mode*&#x2F;);int openat(int fd,const char*path,int oflag,...&#x2F;*mode_t mode *&#x2F;);"}</script><link rel="canonical" href="https://xinlong-chen.github.io/2023/03/06/linux-file-IO-open-close/"><link rel="icon" href="/img/avatar3.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/avatar3.png" alt="Xinlong-Chen&#039;s blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-03-06T06:00:25.000Z" title="3/6/2023, 2:00:25 PM">2023-03-06</time>发表</span><span class="level-item"><time dateTime="2023-03-06T14:51:02.989Z" title="3/6/2023, 10:51:02 PM">2023-03-06</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></span><span class="level-item">10 分钟读完 (大约1537个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">UNIX环境高级编程 - 文件I/O - 打开/创建/关闭文件</h1><div class="content"><h2 id="函数open和openat"><a href="#函数open和openat" class="headerlink" title="函数open和openat"></a>函数open和openat</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">open</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* path,<span class="type">int</span> oflag,...<span class="comment">/*mode_t mode*/</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">openat</span><span class="params">(<span class="type">int</span> fd,<span class="type">const</span> <span class="type">char</span>*path,<span class="type">int</span> oflag,...<span class="comment">/*mode_t mode */</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<span id="more"></span>
+
+<p>可以使用如下命令查看参数：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">man 2 open</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>参数：</p>
+<ul>
+<li><p><code>path</code>:要打开或者创建文件的名字</p>
+</li>
+<li><p><code>oflag</code>：用于指定函数的操作行为：</p>
+<p><strong>必选的标志</strong>：（标志&#x2F;常量定义于 <code>fcntl.h</code> 中）</p>
+<ul>
+<li><code>O_RDONLY</code>常量：文件只读打开</li>
+<li><code>O_WRONLY</code>常量：文件只写打开</li>
+<li><code>O_RDWR</code>常量：文件读、写打开</li>
+<li><code>O_EXEC</code>常量：只执行打开</li>
+<li><code>O_SEARCH</code>常量：只搜索打开（应用于目录）。本文涉及的操作系统都没有支持该常</li>
+</ul>
+<p>下面的常量是可选的（进行或运行）(不一定所有的操作系统支持，不同的系统得看实际情况)：</p>
+<ul>
+<li><strong><code>O_APPEND</code>：每次写时都追加到文件的尾端</strong></li>
+<li><code>O_CLOEXEC</code>：将<code>FD_CLOEXEC</code>常量设置为文件描述符标志</li>
+<li><strong><code>O_CREAT</code>：若此文件不存在则创建它。在使用此选项时，需要同时说明参数<code>mode</code>（指定该文件的访问权限）</strong></li>
+<li><code>O_DIRECTORY</code>：若<code>path</code>引用的不是目录，则出错</li>
+<li><code>O_EXCL</code>：若同时指定了<code>O_CREAT</code>时，且文件已存在则出错。根据此可以测试一个文件是否存在。若不存在则创建此文件。这使得测试和创建两者成为一个原子操作</li>
+<li><code>O_NOCTTY</code>：若<code>path</code>引用的是终端设备，则不将该设备分配作为此进程的控制终端</li>
+<li><code>O_NOFOLLOW</code>：若<code>path</code>引用的是一个符号链接，则出错</li>
+<li><code>O_NONBLOCK</code>：如果<code>path</code>引用的是一个<code>FIFO</code>、一个块特殊文件或者一个字符特殊文件，则文件本次打开操作和后续的 I&#x2F;O 操作设为非阻塞模式。</li>
+<li><code>O_SYNC</code>：每次 <code>write</code> 等待物理 I&#x2F;O 完成，包括由 <code>write</code> 操作引起的文件属性更新所需的 I&#x2F;O </li>
+<li><strong><code>O_TRUNC</code>： 如果此文件存在，且为<code>O_WRONLY</code>或者<code>O_RDWR</code>成功打开，则将其长度截断为0</strong></li>
+<li><code>O_RSYNC</code>：使每一个<code>read</code>操作等待，直到所有对文件同一部分挂起的写操作都完成。</li>
+<li><code>O_DSYNC</code>：每次 <code>write</code> 等待物理 I&#x2F;O 完成，但不包括由 <code>write</code> 操作引起的文件属性更新所需的 I&#x2F;O</li>
+</ul>
+</li>
+<li><p><code>mode</code>：文件访问权限。文件访问权限常量在 <code>&lt;sys/stat.h&gt;</code> 中定义，有以下九个：</p>
+<ul>
+<li><code>S_IRUSR</code>：用户读</li>
+<li><code>S_IWUSR</code>：用户写</li>
+<li><code>S_IXUSR</code>：用户执行</li>
+<li><code>S_IRGRP</code>：组读</li>
+<li><code>S_IWGRP</code>：组写			</li>
+<li><code>S_IXGRP</code>：组执行			</li>
+<li><code>S_IROTH</code>：其他读</li>
+<li><code>S_IWOTH</code>：其他写</li>
+<li><code>S_IXOTH</code>：其他执行</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>返回值：	</p>
+<ul>
+<li>成功：返回文件描述符。</li>
+<li>失败：返回 -1</li>
+</ul>
+</li>
+</ul>
+<p><strong>由 <code>open/openat</code> 返回的文件描述符一定是最小的未使用的描述符数字。</strong></p>
+<p><strong>对于<code>openat</code>函数，被打开的文件名由<code>fd</code>和<code>path</code>共同决定：</strong></p>
+<ul>
+<li><p>如果<code>path</code>指定的是绝对路径，此时<code>fd</code>被忽略。<code>openat</code>等价于<code>open</code></p>
+</li>
+<li><p>如果<code>path</code>指定的是相对路径名，则<code>fd</code>是一个打开目录的文件描述符。被打开的文件的绝对路径由该<code>fd</code>描述符对应的目录加上<code>path</code>组合而成</p>
+</li>
+<li><p>如果<code>path</code>是一个相对路径名，而<code>fd</code>是特殊值<code>AT_FDCWD</code>，则<code>path</code>相对于当前工作目录。被打开文件在当前工作目录中查找。</p>
+<ul>
+<li><code>fd</code> 是 <code>AT_FDCWD</code> 说明是当前目录</li>
+</ul>
+<p><img src="/2023/03/06/linux-file-IO-open-close/image-20211104234109277.png" alt="image-20211104234109277"></p>
+</li>
+</ul>
+<p><code>openat</code> 函数是 POSIX.1中新增的函数，希望解決两个问题。</p>
+<ol>
+<li><p>让线程可以使用相对路径名打开目录中的文件，而不再只能打开当前工作目录。</p>
+<ul>
+<li>同一进程中的所有线程共享相同的当前工作目录，因此很难让同一进程的多个不同线程在同时间工作在不同的目录中。</li>
+</ul>
+</li>
+<li><p>可以避免 time-of-check-to-time-of-use (TOCTTOU）错误。</p>
+<ul>
+<li>TOCTTOU 错误的基本思想是：如果有两个基于文件的函数调用，其中第二个调用依赖于第一个调用的结果，那么程序是脆弱的。</li>
+<li><strong>因为两个调用并不是原子操作，在两个函数调用之间文件可能改变了</strong>，这样也就造成了第一个调用的结果就不再有效，使得程序最终的结果是错误的。</li>
+</ul>
+</li>
+</ol>
+<h2 id="函数creat"><a href="#函数creat" class="headerlink" title="函数creat"></a>函数creat</h2><p>也可以使用<code>creat</code> 创建一个新文件。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">creat</span><span class="params">(<span class="type">const</span> <span class="type">char</span>*path,<span class="type">mode_t</span> mode)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>此函数等效于：</p>
+<p><code>open(path, O_WRONLY | O_CREAT | O_TRUNC, mode)</code></p>
+<ul>
+<li>参数：<ul>
+<li><code>path</code>:要创建文件的名字</li>
+<li><code>mode</code>：指定该文件的访问权限文件访问权限常量在 <code>&lt;sys/stat.h&gt;</code> 中定义，有下列九个：<ul>
+<li><code>S_IRUSR</code>：用户读</li>
+<li><code>S_IWUSR</code>：用户写</li>
+<li><code>S_IXUSR</code>：用户执行</li>
+<li><code>S_IRGRP</code>：组读</li>
+<li><code>S_IWGRP</code>：组写			</li>
+<li><code>S_IXGRP</code>：组执行			</li>
+<li><code>S_IROTH</code>：其他读</li>
+<li><code>S_IWOTH</code>：其他写</li>
+<li><code>S_IXOTH</code>：其他执行</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>返回值：<ul>
+<li>成功： 返回<code>O_WRONLY</code>打开的文件描述符</li>
+<li>失败： 返回 -1</li>
+</ul>
+</li>
+</ul>
+<p><code>creat</code>的不足：</p>
+<ul>
+<li>它以<strong>只写方式</strong>打开。若要先写再读，则需调用<code>creat</code>、<code>close</code>，然后再调用<code>open</code>进行读取。</li>
+<li>若文件已存在则将文件截断为0。</li>
+</ul>
+<p>现在可以使用新的<code>open</code>:</p>
+<p><code>open(path, O_RDWR | O_CREAT | O_TRUNC, mode)</code></p>
+<blockquote>
+<p>为什么会有<code>open</code>了还需要creat？</p>
+<p>历史原因，老版本的<code>open</code>没有<code>O_CREAT</code>标志。</p>
+</blockquote>
+<h2 id="函数close"><a href="#函数close" class="headerlink" title="函数close"></a>函数close</h2><p>可以使用<code>close</code> 关闭一个打开文件。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">close</span><span class="params">(<span class="type">int</span> fd)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>参数：<ul>
+<li><code>fd</code>：待关闭文件的文件描述符</li>
+</ul>
+</li>
+<li>返回值：<ul>
+<li>成功：返回 0</li>
+<li>失败：返回 -1</li>
+</ul>
+</li>
+</ul>
+<p>注意：</p>
+<ul>
+<li>进程关闭一个文件会释放它加在该文件上的所有记录锁。</li>
+<li><strong>当一个进程终止时，内核会自动关闭它所有的打开的文件</strong>。</li>
+</ul>
+</div><div class="article-licensing box"><div class="licensing-title"><p>UNIX环境高级编程 - 文件I/O - 打开/创建/关闭文件</p><p><a href="https://xinlong-chen.github.io/2023/03/06/linux-file-IO-open-close/">https://xinlong-chen.github.io/2023/03/06/linux-file-IO-open-close/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Xinlong-Chen</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-03-06</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-03-06</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="" rel="noopener" target="_blank" title="CC BY-NC-SA 4.0" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/linux%E7%BC%96%E7%A8%8B/">linux编程</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2023/03/06/linux-network-send-recv/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">Linux网络编程 - 发送/接收数据 &amp; 缓冲区</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/03/06/linux-unix-standard/"><span class="level-item">UNIX环境高级编程 - UNIX标准及实现</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><script src="https://utteranc.es/client.js" repo="Xinlong-Chen/Xinlong-Chen.github.io" issue-term="pathname" label="some-issue-label" theme="github-light" crossorigin="anonymous" async></script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="/img/avatar2.png" alt="Xinlong Chen"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Xinlong Chen</p><p class="is-size-6 is-block">os | db</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Canton</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">56</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories"><p class="title">9</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags"><p class="title">17</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/Xinlong-Chen" target="_blank" rel="noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/Xinlong-Chen"><i class="fab fa-github"></i></a></div></div></div><!--!--><div class="card widget" data-type="links"><div class="card-content"><div class="menu"><h3 class="menu-label">链接</h3><ul class="menu-list"><li><a class="level is-mobile" href="https://www.cnblogs.com/cxl-" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">cnblog</span></span><span class="level-right"><span class="level-item tag">www.cnblogs.com</span></span></a></li><li><a class="level is-mobile" href="https://blog.csdn.net/hrbust_cxl" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">csdn</span></span><span class="level-right"><span class="level-item tag">blog.csdn.net</span></span></a></li></ul></div></div></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/C/"><span class="level-start"><span class="level-item">C++</span></span><span class="level-end"><span class="level-item tag">22</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">分布式系统</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%89%8D%E7%AB%AF/"><span class="level-start"><span class="level-item">前端</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">操作系统</span></span><span class="level-end"><span class="level-item tag">21</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%95%B0%E5%AD%A6/"><span class="level-start"><span class="level-item">数学</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">数据库系统</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%9D%82%E4%B8%83%E6%9D%82%E5%85%AB/"><span class="level-start"><span class="level-item">杂七杂八</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/%E7%A1%AC%E4%BB%B6/"><span class="level-start"><span class="level-item">硬件</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/"><span class="level-start"><span class="level-item">计算机网络</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></div></div></div><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">最新文章</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-06T15:58:46.000Z">2023-03-06</time></p><p class="title"><a href="/2023/03/06/math-matrix-10/">矩阵论 - 10 - 四个基本子空间</a></p><p class="categories"><a href="/categories/%E6%95%B0%E5%AD%A6/">数学</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-06T15:53:03.000Z">2023-03-06</time></p><p class="title"><a href="/2023/03/06/os-ostep-thread/">ostep - 线程</a></p><p class="categories"><a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-06T15:43:20.000Z">2023-03-06</time></p><p class="title"><a href="/2023/03/06/os-ostep-process-api/">ostep - 进程API</a></p><p class="categories"><a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-06T14:54:29.000Z">2023-03-06</time></p><p class="title"><a href="/2023/03/06/hardware-Raspberry-Pi-ssh/">树莓派 - 开启ssh服务并固定ip</a></p><p class="categories"><a href="/categories/%E7%A1%AC%E4%BB%B6/">硬件</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-06T13:54:29.000Z">2023-03-06</time></p><p class="title"><a href="/2023/03/06/hardware-Raspberry-Pi-self-start/">树莓派 - 树莓派开机自启动</a></p><p class="categories"><a href="/categories/%E7%A1%AC%E4%BB%B6/">硬件</a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">归档</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2023/"><span class="level-start"><span class="level-item">2023</span></span><span class="level-end"><span class="level-item tag">51</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/"><span class="level-start"><span class="level-item">2021</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/cmu15445/"><span class="tag">cmu15445</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cpp/"><span class="tag">cpp</span><span class="tag">10</span></a></div><div class="control"><a class="tags has-addons" href="/tags/debug/"><span class="tag">debug</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/effective-C/"><span class="tag">effective C++</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/hitos/"><span class="tag">hitos</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux0-11/"><span class="tag">linux0.11</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux%E4%BD%BF%E7%94%A8/"><span class="tag">linux使用</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux%E7%BC%96%E7%A8%8B/"><span class="tag">linux编程</span><span class="tag">8</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mit6-824/"><span class="tag">mit6.824</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mit6-s081/"><span class="tag">mit6.s081</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ostep/"><span class="tag">ostep</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/qt/"><span class="tag">qt</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/stl/"><span class="tag">stl</span><span class="tag">10</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%90%86%E8%AE%BA/"><span class="tag">操作系统理论</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%A0%91%E8%8E%93%E6%B4%BE/"><span class="tag">树莓派</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E7%9F%A9%E9%98%B5%E8%AE%BA/"><span class="tag">矩阵论</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/"><span class="tag">网络编程</span><span class="tag">2</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/avatar3.png" alt="Xinlong-Chen&#039;s blog" height="28"></a><p class="is-size-7"><span>&copy; 2023 Xinlong-Chen</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-cn");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/mhchem.min.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
