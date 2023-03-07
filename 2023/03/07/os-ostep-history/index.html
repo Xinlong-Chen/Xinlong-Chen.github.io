@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>操作系统 - 操作系统定义与历史 - Xinlong-Chen&#039;s blog</title><link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#3273dc"><meta name="application-name" content="Xinlong Chen&#039;s blog"><meta name="msapplication-TileImage" content="/img/avatar3.png"><meta name="msapplication-TileColor" content="#3273dc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Xinlong Chen&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="什么是操作系统操作系统是在硬件和应用之间的软件层  “操作系统是管理硬件资源、控制程序运行、改善人机界面 和为应用软件提供支持的一种系统软件。” [计算机百科全书(第2版)]"><meta property="og:type" content="blog"><meta property="og:title" content="操作系统 - 操作系统定义与历史"><meta property="og:url" content="https://xinlong-chen.github.io/2023/03/07/os-ostep-history/"><meta property="og:site_name" content="Xinlong-Chen&#039;s blog"><meta property="og:description" content="什么是操作系统操作系统是在硬件和应用之间的软件层  “操作系统是管理硬件资源、控制程序运行、改善人机界面 和为应用软件提供支持的一种系统软件。” [计算机百科全书(第2版)]"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/os-ostep-history/image-20210916145659232.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/os-ostep-history/image-20210915234007835.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/os-ostep-history/image-20210916151035093.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/os-ostep-history/image-20210916000542070.png"><meta property="article:published_time" content="2023-03-07T02:06:44.000Z"><meta property="article:modified_time" content="2023-03-07T02:12:40.442Z"><meta property="article:author" content="Xinlong-Chen"><meta property="article:tag" content="操作系统理论"><meta property="article:tag" content="ostep"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://xinlong-chen.github.io/2023/03/07/os-ostep-history/image-20210916145659232.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://xinlong-chen.github.io/2023/03/07/os-ostep-history/"},"headline":"操作系统 - 操作系统定义与历史","image":["https://xinlong-chen.github.io/2023/03/07/os-ostep-history/image-20210916145659232.png","https://xinlong-chen.github.io/2023/03/07/os-ostep-history/image-20210915234007835.png","https://xinlong-chen.github.io/2023/03/07/os-ostep-history/image-20210916151035093.png","https://xinlong-chen.github.io/2023/03/07/os-ostep-history/image-20210916000542070.png"],"datePublished":"2023-03-07T02:06:44.000Z","dateModified":"2023-03-07T02:12:40.442Z","author":{"@type":"Person","name":"Xinlong-Chen"},"publisher":{"@type":"Organization","name":"Xinlong-Chen's blog","logo":{"@type":"ImageObject","url":"https://xinlong-chen.github.io/img/avatar3.png"}},"description":"什么是操作系统操作系统是在硬件和应用之间的软件层  “操作系统是管理硬件资源、控制程序运行、改善人机界面 和为应用软件提供支持的一种系统软件。” [计算机百科全书(第2版)]"}</script><link rel="canonical" href="https://xinlong-chen.github.io/2023/03/07/os-ostep-history/"><link rel="icon" href="/img/avatar3.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/avatar3.png" alt="Xinlong-Chen&#039;s blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-03-07T02:06:44.000Z" title="3/7/2023, 10:06:44 AM">2023-03-07</time>发表</span><span class="level-item"><time dateTime="2023-03-07T02:12:40.442Z" title="3/7/2023, 10:12:40 AM">2023-03-07</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></span><span class="level-item">15 分钟读完 (大约2299个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">操作系统 - 操作系统定义与历史</h1><div class="content"><h2 id="什么是操作系统"><a href="#什么是操作系统" class="headerlink" title="什么是操作系统"></a>什么是操作系统</h2><p>操作系统是在硬件和应用之间的软件层</p>
+<blockquote>
+<p>“操作系统是管理硬件资源、控制程序运行、改善人机界面 和为应用软件提供支持的一种系统软件。” [计算机百科全书(第2版)]</p>
+</blockquote>
+<p><img src="/2023/03/07/os-ostep-history/image-20210916145659232.png"></p>
+<span id="more"></span>
+<p>操作系统 &#x3D; 管理 + 服务</p>
+<p><strong>操作系统为应用提供的一些服务</strong>:</p>
+<ol>
+<li>为应用提供计算资源的抽象<ul>
+<li>CPU：进程&#x2F;线程，数量不受物理CPU的限制</li>
+<li>内存：虚拟内存，大小不受物理内存的限制</li>
+<li>I&#x2F;O设备：将各种设备统一抽象为文件，提供统一接口</li>
+</ul>
+</li>
+<li>为应用提供线程间的同步<ul>
+<li>应用可以实现自己的同步原语（如spinlock）</li>
+<li>操作系统提供了更高效的同步原语（与线程切换配合, 如pthread_mutex）</li>
+</ul>
+</li>
+<li>为应用提供进程间的通信<ul>
+<li>应用可以利用网络进行进程间通信（如loopback设备） </li>
+<li>操作系统提供了更高效的本地通信机制（具有更丰富的语义，如pipe）</li>
+</ul>
+</li>
+</ol>
+<p><strong>操作系统对应用的管理</strong>:</p>
+<ol>
+<li><p>生命周期的管理</p>
+<ul>
+<li>应用的加载、迁移、销毁等操作</li>
+</ul>
+</li>
+<li><p>计算资源的分配 </p>
+<ul>
+<li>CPU：线程的调度机制</li>
+<li>内存：物理内存的分配</li>
+<li>I&#x2F;O设备：设备的复用与分配</li>
+</ul>
+</li>
+<li><p>安全与隔离</p>
+<ul>
+<li>应用程序内部：访问控制机制</li>
+<li>应用程序之间：隔离机制，包括错误隔离和性能隔离</li>
+</ul>
+</li>
+</ol>
+<p>管理和服务的目标有可能存在冲突</p>
+<ul>
+<li><p>服务的目标：单个应用的运行效率最大化</p>
+</li>
+<li><p>管理的目标：系统的资源整体利用率最大化</p>
+</li>
+</ul>
+<p>– 例：单纯强调公平性的调度策略往往资源利用率低,如细粒度的round-robin导致大量的上下文切换</p>
+<p>操作系统的定义：</p>
+<ul>
+<li>操作系统的核心功能： <ul>
+<li>将有限的、离散的资源，高效地抽象为无限的、连续的资源</li>
+</ul>
+</li>
+<li>从软件角度的定义： <ul>
+<li>硬件资源虚拟化+管理功能可编程</li>
+</ul>
+</li>
+<li>从结构角度的定义： <ul>
+<li>操作系统内核+系统框架</li>
+</ul>
+</li>
+</ul>
+<h2 id="操作系统的历史"><a href="#操作系统的历史" class="headerlink" title="操作系统的历史"></a>操作系统的历史</h2><h3 id="早期操作系统：只是一些库"><a href="#早期操作系统：只是一些库" class="headerlink" title="早期操作系统：只是一些库"></a>早期操作系统：只是一些库</h3><p>一开始，操作系统只是一组常用函数库。例如，不是让系统中的每个程序员都编写低级 I&#x2F;O 处理代码，而是让操作系统提供这样的 API，这样开发人员的工作更加轻松。</p>
+<p><strong>批（batch）处理</strong>：先把一些工作准备好，然后由操作员以“分批” 的方式运行（操作员决定运行作业的顺序）。</p>
+<p>缺点：因为计算机闲置成本较高，因此此时的计算机缺少交互。</p>
+<h3 id="超越库：保护"><a href="#超越库：保护" class="headerlink" title="超越库：保护"></a>超越库：保护</h3><p>操作系统运行的代码是特殊的。因为OS控制了设备，因此对待它的方式应该与对待正常应用程序代码的方式不同。（若OS以库的方式提供磁盘I&#x2F;O，那么任何程序都可以读取磁盘，而不存在隐私与隔离）</p>
+<p>出于保护目的，划分出用户模式和内核模式。</p>
+<ul>
+<li><strong>用户模式</strong>(user mode)。在用户模式下运行的代码会受到限制，应用程序不能完全访问硬件资源。例如，I&#x2F;O请求等。</li>
+<li><strong>内核模式</strong>(kernel mode)：在内核模式下，操作系统可以完全访问系统的硬件，因此可以执行诸如发起 I&#x2F;O 请 求或为程序提供更多内存等功能。</li>
+</ul>
+<p>使用<strong>系统调用（system call）</strong>将控制转移（跳转）到 OS 中，同时提高硬件特权级别（hardware privilege level）。</p>
+<p><img src="/2023/03/07/os-ostep-history/image-20210915234007835.png" alt="image-20210915234007835"></p>
+<p>用户应用程序以所谓的用户模式（user mode）运行，这意味着硬件限制了应用程序的功能。</p>
+<p>在发起系统调用时，硬件将控制转移到预先指定的陷阱处理程序（trap handler），并同时将特权级别提升到内核模式（kernel mode）。</p>
+<p>在内核模式下，操作系统可以完全访问系统的硬件，因此可以执行诸如发起 I&#x2F;O 请求或为程序提供更多内存等功能。</p>
+<p>当操作系统完成请求的服务时，它通过特殊的陷阱返回 （return-from-trap）指令将控制权交还给用户，该指令返回到用户模式，同时将控制权交还给应用程序，回到应用离开的地方。</p>
+<p>以下为printf的使用过程：</p>
+<p><img src="/2023/03/07/os-ostep-history/image-20210916151035093.png" alt="image-20210916151035093"></p>
+<p>缺点：用户程序发生I&#x2F;O时，CPU利用率较低。</p>
+<h3 id="多道批处理系统"><a href="#多道批处理系统" class="headerlink" title="多道批处理系统"></a>多道批处理系统</h3><h4 id="多道程序"><a href="#多道程序" class="headerlink" title="多道程序"></a>多道程序</h4><p>由于希望更好地利用机器资源，<strong>多道程序（multiprogramming）</strong>变得很普遍。 操作系统不是一次只运行一项作业，而是将大量作业加载到内存中甚在它们之间快速切换， 从而提高 CPU 利用率。这种切换非常重要，因为 I&#x2F;O 设备很慢。</p>
+<p>在 I&#x2F;O 进行和任务中断时，要支持多道程序和重叠运行。多道程序给操作系统带来的挑战：</p>
+<ol>
+<li>内存保护（memory protection），我们不希望一个程序能够访问另一个程序的内存。</li>
+<li>并发（concurrency）问题。</li>
+<li>在中断存在的情况下，确保操作系统正常运行是一个很大的挑战。</li>
+</ol>
+<h4 id="多道批处理系统-1"><a href="#多道批处理系统-1" class="headerlink" title="多道批处理系统"></a>多道批处理系统</h4><p>早期的操作系统可以称为单道批处理系统。在单道批处理系统中，内存中仅有一道作业，它无法充分利用系统中的所有资源，致使系统性能较差。为了进一步提高资源的利用率和系统吞吐量，在20世纪60年代中期又引入了多道程序设计技术，由此而形成了多道批处理系统.</p>
+<p>多道批处理系统有两个特点：</p>
+<ol>
+<li><p>多道：系统内可同时容纳多个作业。这些作业放在外存中，组成一个后备队列，系统按一定的调度原则每次从后备作业队列中选取一个或多个作业进入内存运行，运行作业结束、退出运行和后备作业进入运行均由系统自动实现，从而在系统中形成一个自动转接的、连续的作业流。</p>
+</li>
+<li><p>成批：在系统运行过程中，不允许用户与其作业发生交互作用，即：作业一旦进入系统，用户就不能直接干预其作业的运行。</p>
+</li>
+</ol>
+<p>缺点：缺少交互，响应时间较长。</p>
+<h3 id="分时系统"><a href="#分时系统" class="headerlink" title="分时系统"></a>分时系统</h3><p>多道程序设计允许处理器同时处理多个批作业，还可处理多个交互作业。对于后者而言，由于多个用户分享处理器时间，因而该技术称为分时(time sharing)。</p>
+<p>在分时系统中，多个用户可以通过终端同时访问系统，由操作系统<strong>控制每个用户程序在很短的时间内交替执行</strong>。</p>
+<p>因此，如果有n个用户同时请求服务，若不计操作系统开销，每个用户平均只能得到计算机有效速度的1&#x2F;n。但由于人的反应时间相对较慢，因此设计良好的系统响应时间应可以接近于专用计算机的响应时间。<br>批处理和分时都使用了多道程序设计，其主要要差别如下表所示。</p>
+<p><img src="/2023/03/07/os-ostep-history/image-20210916000542070.png" alt="image-20210916000542070"></p>
+<h3 id="实时系统"><a href="#实时系统" class="headerlink" title="实时系统"></a>实时系统</h3><p>在指定或者确定的时间内完成系统功能以及对外部或内部事件在同步或异步时间内做出响应的系统，实时意思就是对响应时间有严格要求，要以足够快的速度进行处理。分为硬实时和软实时两种。</p>
+<p>硬实时：某个动作<strong>必须绝对</strong>地在规定的时刻发生，否则会产生严重后果。（工业过程控制、民用航空、军事）</p>
+<p>软实时：希望能满足时限，但页允许偶尔违反最终时限，偶尔违反不会产生严重后果。（多媒体系统）</p>
+<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a><em>reference</em></h2><p>[1] 操作系统导论（ostep）</p>
+<p>[2]上海交通大学并行与分布式系统研究所-操作系统的前世今生</p>
+<p>[3] 操作系统-精髓与设计原理</p>
+<p>[4] 现代操作系统</p>
+<p>[5] 操作系统概念</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>操作系统 - 操作系统定义与历史</p><p><a href="https://xinlong-chen.github.io/2023/03/07/os-ostep-history/">https://xinlong-chen.github.io/2023/03/07/os-ostep-history/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Xinlong-Chen</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-03-07</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-03-07</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="" rel="noopener" target="_blank" title="CC BY-NC-SA 4.0" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%90%86%E8%AE%BA/">操作系统理论</a><a class="link-muted mr-2" rel="tag" href="/tags/ostep/">ostep</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2023/03/07/os-ostep-scheduling/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">操作系统 - 进程调度</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/03/07/os-ostep-kernel-intro/"><span class="level-item">操作系统 - 操作系统内核架构</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><script src="https://utteranc.es/client.js" repo="Xinlong-Chen/Xinlong-Chen.github.io" issue-term="pathname" label="some-issue-label" theme="github-light" crossorigin="anonymous" async></script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="/img/avatar2.png" alt="Xinlong Chen"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Xinlong Chen</p><p class="is-size-6 is-block">os | db</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Canton</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">78</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories"><p class="title">10</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags"><p class="title">17</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/Xinlong-Chen" target="_blank" rel="noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/Xinlong-Chen"><i class="fab fa-github"></i></a></div></div></div><!--!--><div class="card widget" data-type="links"><div class="card-content"><div class="menu"><h3 class="menu-label">链接</h3><ul class="menu-list"><li><a class="level is-mobile" href="https://www.cnblogs.com/cxl-" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">cnblog</span></span><span class="level-right"><span class="level-item tag">www.cnblogs.com</span></span></a></li><li><a class="level is-mobile" href="https://blog.csdn.net/hrbust_cxl" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">csdn</span></span><span class="level-right"><span class="level-item tag">blog.csdn.net</span></span></a></li></ul></div></div></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/C/"><span class="level-start"><span class="level-item">C++</span></span><span class="level-end"><span class="level-item tag">22</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">分布式系统</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%89%8D%E7%AB%AF/"><span class="level-start"><span class="level-item">前端</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/"><span class="level-start"><span class="level-item">工具使用</span></span><span class="level-end"><span class="level-item tag">11</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">操作系统</span></span><span class="level-end"><span class="level-item tag">33</span></span></a><ul><li><a class="level is-mobile" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E7%A1%AC%E4%BB%B6/"><span class="level-start"><span class="level-item">硬件</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">数据库系统</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%9D%82%E4%B8%83%E6%9D%82%E5%85%AB/"><span class="level-start"><span class="level-item">杂七杂八</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/%E7%A1%AC%E4%BB%B6/"><span class="level-start"><span class="level-item">硬件</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/"><span class="level-start"><span class="level-item">计算机网络</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></div></div></div><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">最新文章</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T03:02:27.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/os-ostep-LDE/">操作系统 - 受限直接执行（Limited Direct Execution, LDE）</a></p><p class="categories"><a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T02:45:55.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/os-ostep-peterson/">操作系统-PETERSON算法</a></p><p class="categories"><a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T02:35:30.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/os-ostep-io/">操作系统 - I/O设备</a></p><p class="categories"><a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a> / <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E7%A1%AC%E4%BB%B6/">硬件</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T02:32:31.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/os-ostep-overview/">操作系统 - 操作系统的整体结构</a></p><p class="categories"><a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T02:18:58.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/os-ostep-process/">操作系统 - 进程</a></p><p class="categories"><a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">归档</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2023/"><span class="level-start"><span class="level-item">2023</span></span><span class="level-end"><span class="level-item tag">73</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/"><span class="level-start"><span class="level-item">2021</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/cmu15445/"><span class="tag">cmu15445</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cpp/"><span class="tag">cpp</span><span class="tag">10</span></a></div><div class="control"><a class="tags has-addons" href="/tags/debug/"><span class="tag">debug</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/effective-C/"><span class="tag">effective C++</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/hitos/"><span class="tag">hitos</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux0-11/"><span class="tag">linux0.11</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux%E4%BD%BF%E7%94%A8/"><span class="tag">linux使用</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux%E7%BC%96%E7%A8%8B/"><span class="tag">linux编程</span><span class="tag">8</span></a></div><div class="control"><a class="tags has-addons" href="/tags/missing-semester/"><span class="tag">missing semester</span><span class="tag">11</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mit6-824/"><span class="tag">mit6.824</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mit6-s081/"><span class="tag">mit6.s081</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ostep/"><span class="tag">ostep</span><span class="tag">13</span></a></div><div class="control"><a class="tags has-addons" href="/tags/qt/"><span class="tag">qt</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/stl/"><span class="tag">stl</span><span class="tag">10</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%90%86%E8%AE%BA/"><span class="tag">操作系统理论</span><span class="tag">13</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%A0%91%E8%8E%93%E6%B4%BE/"><span class="tag">树莓派</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/"><span class="tag">网络编程</span><span class="tag">2</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/avatar3.png" alt="Xinlong-Chen&#039;s blog" height="28"></a><p class="is-size-7"><span>&copy; 2023 Xinlong-Chen</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-cn");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/mhchem.min.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>

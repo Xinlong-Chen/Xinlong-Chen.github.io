@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>操作系统 - 操作系统内核架构 - Xinlong-Chen&#039;s blog</title><link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#3273dc"><meta name="application-name" content="Xinlong Chen&#039;s blog"><meta name="msapplication-TileImage" content="/img/avatar3.png"><meta name="msapplication-TileColor" content="#3273dc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Xinlong Chen&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="操作系统设计原则操作系统的重要设计原则：策略与机制的分离  策略（Policy）：要做什么 —— 相对动态 机制（Mechanism）：怎么做 —— 相对静态"><meta property="og:type" content="blog"><meta property="og:title" content="操作系统 - 操作系统内核架构"><meta property="og:url" content="https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/"><meta property="og:site_name" content="Xinlong-Chen&#039;s blog"><meta property="og:description" content="操作系统设计原则操作系统的重要设计原则：策略与机制的分离  策略（Policy）：要做什么 —— 相对动态 机制（Mechanism）：怎么做 —— 相对静态"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916152844409.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916153416685.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916155048382.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916154534270.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916154958718.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916161040519.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916155717030.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916155832062.png"><meta property="article:published_time" content="2023-03-07T01:49:45.000Z"><meta property="article:modified_time" content="2023-03-07T02:12:43.717Z"><meta property="article:author" content="Xinlong-Chen"><meta property="article:tag" content="操作系统理论"><meta property="article:tag" content="ostep"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916152844409.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/"},"headline":"操作系统 - 操作系统内核架构","image":["https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916152844409.png","https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916153416685.png","https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916155048382.png","https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916154534270.png","https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916154958718.png","https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916161040519.png","https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916155717030.png","https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/image-20210916155832062.png"],"datePublished":"2023-03-07T01:49:45.000Z","dateModified":"2023-03-07T02:12:43.717Z","author":{"@type":"Person","name":"Xinlong-Chen"},"publisher":{"@type":"Organization","name":"Xinlong-Chen's blog","logo":{"@type":"ImageObject","url":"https://xinlong-chen.github.io/img/avatar3.png"}},"description":"操作系统设计原则操作系统的重要设计原则：策略与机制的分离  策略（Policy）：要做什么 —— 相对动态 机制（Mechanism）：怎么做 —— 相对静态"}</script><link rel="canonical" href="https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/"><link rel="icon" href="/img/avatar3.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/avatar3.png" alt="Xinlong-Chen&#039;s blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-03-07T01:49:45.000Z" title="3/7/2023, 9:49:45 AM">2023-03-07</time>发表</span><span class="level-item"><time dateTime="2023-03-07T02:12:43.717Z" title="3/7/2023, 10:12:43 AM">2023-03-07</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></span><span class="level-item">14 分钟读完 (大约2047个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">操作系统 - 操作系统内核架构</h1><div class="content"><h2 id="操作系统设计原则"><a href="#操作系统设计原则" class="headerlink" title="操作系统设计原则"></a>操作系统设计原则</h2><p>操作系统的重要设计原则：<strong>策略与机制的分离</strong></p>
+<ul>
+<li>策略（Policy）：要做什么 —— 相对动态</li>
+<li>机制（Mechanism）：怎么做 —— 相对静态 <span id="more"></span></li>
+</ul>
+<p>操作系统可仅通过调整策略来适应不同应用的需求</p>
+<table>
+<thead>
+<tr>
+<th>例子</th>
+<th>策略</th>
+<th>机制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>登录</td>
+<td>什么用户、以什么权限登录</td>
+<td>输入处理、策略文件管理、桌面启动加载</td>
+</tr>
+<tr>
+<td>调度</td>
+<td>调度算法：Round-robin、 Earliest Deadline First …</td>
+<td>调度队列、调度实体（如线程） 的表示、调度中断处理 …</td>
+</tr>
+</tbody></table>
+<h2 id="操作系统架构与演进"><a href="#操作系统架构与演进" class="headerlink" title="操作系统架构与演进"></a>操作系统架构与演进</h2><p><img src="/2023/03/07/os-ostep-kernel-intro/image-20210916152844409.png"></p>
+<h2 id="宏内核"><a href="#宏内核" class="headerlink" title="宏内核"></a>宏内核</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>宏内核（Monolithic Kernel）：将管理进程的代码、管理内存的代码、管理各种 I&#x2F;O 设备的代码、文件系统的代码、图形系统代码以及其它功能模块的代码，把这些所有的代码经过编译，最后链接在一起，形成一个大的可执行程序。这个大程序里有实现支持这些功能的所有代码，向用户应用软件提供一些接口，这些接口即系统 API 函数。</p>
+<p>整个系统分为内核与应用两层</p>
+<ul>
+<li>内核：运行在特权级，集中控制所有计算资源</li>
+<li>应用：运行在非特权级，受内核管理，使用内核服务</li>
+</ul>
+<p>结构如下图所示。</p>
+<p><img src="/2023/03/07/os-ostep-kernel-intro/image-20210916153416685.png"></p>
+<p>以内存分配为例：</p>
+<ol>
+<li>应用程序调用内存分配的 API（应用程序接口）函数。</li>
+<li>处理器切换到特权模式，开始运行内核代码。</li>
+<li>内核里的内存管理代码按照特定的算法，分配一块内存。</li>
+<li>把分配的内存块的首地址，返回给内存分配的 API 函数。</li>
+<li>内存分配的 API 函数返回，处理器开始运行用户模式下的应用程序，应用程序就得到了一块内存的首地址，并且可以使用这块内存了。</li>
+</ol>
+<h3 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h3><p><strong>优点</strong>：</p>
+<ul>
+<li>宏内核拥有丰富的沉淀和积累<ul>
+<li>拥有巨大的统一的社区和生态</li>
+<li>针对不同场景优化了30年</li>
+</ul>
+</li>
+</ul>
+<p><strong>缺点</strong>：</p>
+<ul>
+<li>宏内核的结构性缺陷<ul>
+<li><strong>安全性与可靠性问题</strong>：模块之间没有很强的隔离机制</li>
+<li><strong>实时性支持</strong>：系统太复杂导致无法做最坏情况时延分析</li>
+<li><strong>系统庞大而阻碍了创新</strong>：Linux代码行数已经过2千万</li>
+</ul>
+</li>
+</ul>
+<h3 id="宏内核难以满足的场景"><a href="#宏内核难以满足的场景" class="headerlink" title="宏内核难以满足的场景"></a>宏内核难以满足的场景</h3><ul>
+<li>向上向下的扩展 <ul>
+<li>很难去剪裁&#x2F;扩展一个宏内核系统支持从KB级别到TB级别的场景</li>
+</ul>
+</li>
+<li>硬件异构性 <ul>
+<li>很难长期支持一些定制化的方式去解决一些特定问题</li>
+</ul>
+</li>
+<li>功能安全<ul>
+<li>一个广泛共识：Linux无法通过汽车安全完整性认证（ASIL-D）</li>
+</ul>
+</li>
+<li>信息安全<ul>
+<li>单点错误会导致整个系统出错，而现在有数百个安全问题（CVE）</li>
+</ul>
+</li>
+<li>确定性时延<ul>
+<li>Linux花费10+年合并实时补丁，目前依然不确定是否能支持确定性时延</li>
+</ul>
+</li>
+</ul>
+<h2 id="微内核"><a href="#微内核" class="headerlink" title="微内核"></a>微内核</h2><h3 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h3><p>微内核（MICRO-KERNEL）：与宏内核架构相反，它提倡内核功能尽可能少：仅仅只有进程调度、处理中断、内存空间映射、进程间通信等功能。</p>
+<p>服务：开发者们把实际的进程管理、内存管理、设备管理、文件管理等服务功能，做成一个个服务进程。和用户应用进程一样，只是它们很特殊，宏内核提供的功能，在微内核架构里由这些服务进程专门负责完成。</p>
+<p>消息：一种进程间通信的机制，应用程序要请求相关服务，就向微内核发送一条与此服务对应的消息，微内核再把这条消息转发给相关的服务进程，接着服务进程会完成相关的服务。服务进程的编程模型就是循环处理来自其它进程的消息，完成相关的服务功能。</p>
+<p>下图中以文件系统为例，左边为宏内核架构，文件系统以API形式提供；右边为微内核架构，文件系统为一个服务，通过消息这种进程间通信方式请求服务。</p>
+<p><img src="/2023/03/07/os-ostep-kernel-intro/image-20210916155048382.png"></p>
+<p>微内核架构的设计原则：<strong>最小化内核功能</strong></p>
+<ul>
+<li>将操作系统功能移到用户态，称为”服务”（Server）</li>
+<li>在用户模块之间，使用消息传递机制通信</li>
+</ul>
+<p><img src="/2023/03/07/os-ostep-kernel-intro/image-20210916154534270.png"></p>
+<p>以内存分配为例：</p>
+<ol>
+<li>应用程序发送内存分配的消息，这个发送消息的函数是微内核提供的，相当于系统 API，微内核的 API（应用程序接口）相当少，极端情况下仅需要两个，一个接收消息的 API 和一个发送消息的 API。</li>
+<li>处理器切换到特权模式，开始运行内核代码。</li>
+<li>微内核代码让当前进程停止运行，并根据消息包中的数据，确定消息发送给谁，分配内存的消息当然是发送给内存管理服务进程。</li>
+<li>内存管理服务进程收到消息，分配一块内存。</li>
+<li>内存管理服务进程，也会通过消息的形式返回分配内存块的地址给内核，然后继续等待下一条消息。</li>
+<li>微内核把包含内存块地址的消息返回给发送内存分配消息的应用程序。</li>
+<li>处理器开始运行用户模式下的应用程序，应用程序就得到了一块内存的首地址，并且可以使用这块内存了。</li>
+</ol>
+<h3 id="优缺点-1"><a href="#优缺点-1" class="headerlink" title="优缺点"></a>优缺点</h3><p><strong>优点</strong>：</p>
+<ul>
+<li>易于扩展：直接添加一个用户进程即可为操作系统增加服务</li>
+<li>易于移植：大部分模块与底层硬件无关</li>
+<li>更加可靠：在内核模式运行的代码量大大减少</li>
+<li>更加安全：即使存在漏洞，服务与服务之间存在进程粒度隔离</li>
+<li>更加健壮：单个模块出现问题不会影响到系统整体</li>
+</ul>
+<p><strong>缺点</strong>：</p>
+<ul>
+<li>性能较差：内核中的模块交互由函数调用变成了进程间通信，性能对比如下图</li>
+<li>生态欠缺：尚未形成像Linux一样具有广泛开发者的社区</li>
+<li>重用问题：重用宏内核操作系统提供兼容性，带来新问题</li>
+</ul>
+<p><img src="/2023/03/07/os-ostep-kernel-intro/image-20210916154958718.png" alt="image-20210916154958718"></p>
+<p>宏内核，微内核对比：黄色-OS；白色-App；蓝色-逻辑</p>
+<p><img src="/2023/03/07/os-ostep-kernel-intro/image-20210916161040519.png"></p>
+<h2 id="混合内核架构"><a href="#混合内核架构" class="headerlink" title="混合内核架构"></a>混合内核架构</h2><p>混合内核架构是<strong>宏内核与微内核的结合</strong>。</p>
+<ul>
+<li>将需要性能的模块重新放回内核态 <ul>
+<li>macOS &#x2F; iOS：Mach微内核 + BSD 4.3 + 系统框架</li>
+<li>Windows NT：微内核 + 内核态的系统服务 + 系统框架</li>
+</ul>
+</li>
+</ul>
+<p>Mac OS的架构如下图：</p>
+<p><img src="/2023/03/07/os-ostep-kernel-intro/image-20210916155717030.png"></p>
+<p><img src="/2023/03/07/os-ostep-kernel-intro/image-20210916155832062.png"></p>
+<p>Mac OS有两个内核层——Mach 层与 BSD 层。</p>
+<p>Mach 内核是卡耐基梅隆大学开发的经典微内核，意在提供最基本的操作系统服务，从而达到高性能、安全、可扩展的目的。</p>
+<p>BSD 则是伯克利大学开发的类 UNIX 操作系统，提供一整套操作系统服务。</p>
+<h2 id="前沿的内核架构"><a href="#前沿的内核架构" class="headerlink" title="前沿的内核架构"></a>前沿的内核架构</h2><p>可以了解：</p>
+<ul>
+<li><p>外核+库OS（EXOKERNEL + LIBOS）</p>
+</li>
+<li><p>多内核&#x2F;复内核（MULTI-KERNEL）</p>
+</li>
+</ul>
+<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a><em>reference</em></h2><p>[1]上海交通大学并行与分布式系统研究所-操作系统结构</p>
+<p>[2] 极客时间 · 操作系统实战45讲</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>操作系统 - 操作系统内核架构</p><p><a href="https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/">https://xinlong-chen.github.io/2023/03/07/os-ostep-kernel-intro/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Xinlong-Chen</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-03-07</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-03-07</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="" rel="noopener" target="_blank" title="CC BY-NC-SA 4.0" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%90%86%E8%AE%BA/">操作系统理论</a><a class="link-muted mr-2" rel="tag" href="/tags/ostep/">ostep</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2023/03/07/os-ostep-history/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">操作系统 - 操作系统定义与历史</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/03/07/os-ostep-syscall/"><span class="level-item">操作系统 - 系统调用</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><script src="https://utteranc.es/client.js" repo="Xinlong-Chen/Xinlong-Chen.github.io" issue-term="pathname" label="some-issue-label" theme="github-light" crossorigin="anonymous" async></script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="/img/avatar2.png" alt="Xinlong Chen"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Xinlong Chen</p><p class="is-size-6 is-block">os | db</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Canton</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">78</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories"><p class="title">10</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags"><p class="title">17</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/Xinlong-Chen" target="_blank" rel="noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/Xinlong-Chen"><i class="fab fa-github"></i></a></div></div></div><!--!--><div class="card widget" data-type="links"><div class="card-content"><div class="menu"><h3 class="menu-label">链接</h3><ul class="menu-list"><li><a class="level is-mobile" href="https://www.cnblogs.com/cxl-" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">cnblog</span></span><span class="level-right"><span class="level-item tag">www.cnblogs.com</span></span></a></li><li><a class="level is-mobile" href="https://blog.csdn.net/hrbust_cxl" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">csdn</span></span><span class="level-right"><span class="level-item tag">blog.csdn.net</span></span></a></li></ul></div></div></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/C/"><span class="level-start"><span class="level-item">C++</span></span><span class="level-end"><span class="level-item tag">22</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">分布式系统</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%89%8D%E7%AB%AF/"><span class="level-start"><span class="level-item">前端</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/"><span class="level-start"><span class="level-item">工具使用</span></span><span class="level-end"><span class="level-item tag">11</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">操作系统</span></span><span class="level-end"><span class="level-item tag">33</span></span></a><ul><li><a class="level is-mobile" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E7%A1%AC%E4%BB%B6/"><span class="level-start"><span class="level-item">硬件</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">数据库系统</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%9D%82%E4%B8%83%E6%9D%82%E5%85%AB/"><span class="level-start"><span class="level-item">杂七杂八</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/%E7%A1%AC%E4%BB%B6/"><span class="level-start"><span class="level-item">硬件</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/"><span class="level-start"><span class="level-item">计算机网络</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></div></div></div><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">最新文章</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T03:02:27.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/os-ostep-LDE/">操作系统 - 受限直接执行（Limited Direct Execution, LDE）</a></p><p class="categories"><a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T02:45:55.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/os-ostep-peterson/">操作系统-PETERSON算法</a></p><p class="categories"><a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T02:35:30.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/os-ostep-io/">操作系统 - I/O设备</a></p><p class="categories"><a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a> / <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/%E7%A1%AC%E4%BB%B6/">硬件</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T02:32:31.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/os-ostep-overview/">操作系统 - 操作系统的整体结构</a></p><p class="categories"><a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T02:18:58.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/os-ostep-process/">操作系统 - 进程</a></p><p class="categories"><a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">归档</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2023/"><span class="level-start"><span class="level-item">2023</span></span><span class="level-end"><span class="level-item tag">73</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/"><span class="level-start"><span class="level-item">2021</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/cmu15445/"><span class="tag">cmu15445</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cpp/"><span class="tag">cpp</span><span class="tag">10</span></a></div><div class="control"><a class="tags has-addons" href="/tags/debug/"><span class="tag">debug</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/effective-C/"><span class="tag">effective C++</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/hitos/"><span class="tag">hitos</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux0-11/"><span class="tag">linux0.11</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux%E4%BD%BF%E7%94%A8/"><span class="tag">linux使用</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux%E7%BC%96%E7%A8%8B/"><span class="tag">linux编程</span><span class="tag">8</span></a></div><div class="control"><a class="tags has-addons" href="/tags/missing-semester/"><span class="tag">missing semester</span><span class="tag">11</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mit6-824/"><span class="tag">mit6.824</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mit6-s081/"><span class="tag">mit6.s081</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ostep/"><span class="tag">ostep</span><span class="tag">13</span></a></div><div class="control"><a class="tags has-addons" href="/tags/qt/"><span class="tag">qt</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/stl/"><span class="tag">stl</span><span class="tag">10</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%90%86%E8%AE%BA/"><span class="tag">操作系统理论</span><span class="tag">13</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%A0%91%E8%8E%93%E6%B4%BE/"><span class="tag">树莓派</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/"><span class="tag">网络编程</span><span class="tag">2</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/avatar3.png" alt="Xinlong-Chen&#039;s blog" height="28"></a><p class="is-size-7"><span>&copy; 2023 Xinlong-Chen</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-cn");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/mhchem.min.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
