@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>missing semester - Security and Cryptography - Xinlong-Chen&#039;s blog</title><link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#3273dc"><meta name="application-name" content="Xinlong Chen&#039;s blog"><meta name="msapplication-TileImage" content="/img/avatar3.png"><meta name="msapplication-TileColor" content="#3273dc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Xinlong Chen&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="熵熵(Entropy) 度量了不确定性并可以用来决定密码的强度。 熵的单位是 bits(比特)。对于一个均匀分布的随机离散变量，熵等于 log_2(# of possibilities)。扔一次硬币的熵是1 bits，即log_2(2)。掷一次（六面）骰子的熵大约为2.58 bits，即log_2(6)。 使用多少比特的熵取决于应用的威胁模型。"><meta property="og:type" content="blog"><meta property="og:title" content="missing semester - Security and Cryptography"><meta property="og:url" content="https://xinlong-chen.github.io/2023/03/07/missing-Security/"><meta property="og:site_name" content="Xinlong-Chen&#039;s blog"><meta property="og:description" content="熵熵(Entropy) 度量了不确定性并可以用来决定密码的强度。 熵的单位是 bits(比特)。对于一个均匀分布的随机离散变量，熵等于 log_2(# of possibilities)。扔一次硬币的熵是1 bits，即log_2(2)。掷一次（六面）骰子的熵大约为2.58 bits，即log_2(6)。 使用多少比特的熵取决于应用的威胁模型。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/missing-Security/password_strength.png"><meta property="article:published_time" content="2023-03-07T01:31:34.000Z"><meta property="article:modified_time" content="2023-03-07T01:34:33.667Z"><meta property="article:author" content="Xinlong-Chen"><meta property="article:tag" content="missing semester"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://xinlong-chen.github.io/2023/03/07/missing-Security/password_strength.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://xinlong-chen.github.io/2023/03/07/missing-Security/"},"headline":"missing semester - Security and Cryptography","image":["https://xinlong-chen.github.io/2023/03/07/missing-Security/password_strength.png"],"datePublished":"2023-03-07T01:31:34.000Z","dateModified":"2023-03-07T01:34:33.667Z","author":{"@type":"Person","name":"Xinlong-Chen"},"publisher":{"@type":"Organization","name":"Xinlong-Chen's blog","logo":{"@type":"ImageObject","url":"https://xinlong-chen.github.io/img/avatar3.png"}},"description":"熵熵(Entropy) 度量了不确定性并可以用来决定密码的强度。 熵的单位是 bits(比特)。对于一个均匀分布的随机离散变量，熵等于 log_2(# of possibilities)。扔一次硬币的熵是1 bits，即log_2(2)。掷一次（六面）骰子的熵大约为2.58 bits，即log_2(6)。 使用多少比特的熵取决于应用的威胁模型。"}</script><link rel="canonical" href="https://xinlong-chen.github.io/2023/03/07/missing-Security/"><link rel="icon" href="/img/avatar3.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/avatar3.png" alt="Xinlong-Chen&#039;s blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-03-07T01:31:34.000Z" title="3/7/2023, 9:31:34 AM">2023-03-07</time>发表</span><span class="level-item"><time dateTime="2023-03-07T01:34:33.667Z" title="3/7/2023, 9:34:33 AM">2023-03-07</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/">工具使用</a></span><span class="level-item">16 分钟读完 (大约2352个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">missing semester - Security and Cryptography</h1><div class="content"><h2 id="熵"><a href="#熵" class="headerlink" title="熵"></a>熵</h2><p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Entropy_(information_theory)">熵</a>(Entropy) 度量了不确定性并可以用来决定密码的强度。</p>
+<p>熵的单位是 <em>bits</em>(<em>比特</em>)。对于一个均匀分布的随机离散变量，熵等于 <code>log_2(# of possibilities)</code>。扔一次硬币的熵是1 bits，即log_2(2)。掷一次（六面）骰子的熵大约为2.58 bits，即log_2(6)。</p>
+<p>使用多少比特的熵取决于应用的威胁模型。 </p>
+<span id="more"></span>
+<p>XKCD漫画告诉我们，大约40比特的熵足以对抗在线穷举攻击（受限于网络速度和应用认证机制）。 </p>
+<p>而对于离线穷举攻击（主要受限于计算速度）, 一般需要更强的密码 (比如80比特或更多)。</p>
+<p><img src="/2023/03/07/missing-Security/password_strength.png"></p>
+<h2 id="散列函数"><a href="#散列函数" class="headerlink" title="散列函数"></a>散列函数</h2><p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">密码散列函数</a> (Cryptographic hash function) 可以将<strong>任意大小的数据</strong>映射为一个<strong>固定大小的输出</strong>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">hash</span>(value: array&lt;byte&gt;) -&gt; <span class="built_in">vector</span>&lt;byte, N&gt;  (N对于该函数固定)</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/SHA-1">SHA-1</a>是Git中使用的一种散列函数， 它可以将任意大小的输入映射为一个160比特（可被40位十六进制数表示）的输出。 </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">printf</span> <span class="string">&#x27;hello&#x27;</span> | <span class="built_in">sha1sum</span></span></span><br><span class="line">aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">printf</span> <span class="string">&#x27;hello&#x27;</span> | <span class="built_in">sha1sum</span></span></span><br><span class="line">aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">printf</span> <span class="string">&#x27;Hello&#x27;</span> | <span class="built_in">sha1sum</span></span> </span><br><span class="line">f7ff9e8b7bb2e09b70935a5d785e0cc5d9d0abf0</span><br></pre></td></tr></table></figure>
+
+<p>抽象地讲，散列函数可以被认为是一个<strong>不可逆，且看上去随机（但具确定性）</strong>的函数。 一个散列函数拥有以下特性：</p>
+<ul>
+<li><p><strong>确定性</strong>：对于不变的输入永远有相同的输出。</p>
+</li>
+<li><p><strong>不可逆性</strong>：对于<code>hash(m) = h</code>，难以通过已知的输出<code>h</code>来计算出原始输入<code>m</code>。</p>
+</li>
+<li><p>目标碰撞抵抗性&#x2F;弱无碰撞：对于一个给定输入<code>m_1</code>，难以找到<code>m_2 != m_1</code>且<code>hash(m_1) = hash(m_2)</code>。</p>
+</li>
+<li><p>碰撞抵抗性&#x2F;强无碰撞：难以找到一组满足<code>hash(m_1) = hash(m_2)</code>的输入<code>m_1, m_2</code>（该性质严格强于目标碰撞抵抗性，即Hash函数基本没有碰撞）。</p>
+</li>
+</ul>
+<h3 id="密码散列函数的应用"><a href="#密码散列函数的应用" class="headerlink" title="密码散列函数的应用"></a>密码散列函数的应用</h3><ul>
+<li><p>Git中的内容寻址存储(Content addressed storage)：<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Hash_function">散列函数</a>是一个宽泛的概念（存在非密码学的散列函数），那么Git为什么要特意使用密码散列函数？</p>
+<ul>
+<li>普通的散列函数没有无碰撞性，Git 使用密码散列函数，来确保分布式版本控制系统中的两个不同数据不会有相同的摘要信息（例如两个内容不同的 commit 不应该有相同的哈希值）。</li>
+</ul>
+</li>
+<li><p>文件的信息摘要(Message digest)：例如下载文件时，对比下载下来的文件的哈希值和官方公布的哈希值是否相同来判断文件是否损坏或者被篡改。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Commitment_scheme">承诺机制</a>(Commitment scheme)： 假设我希望承诺一个值，但之后再透露它—— 比如在没有一个可信的、双方可见的硬币的情况下在我的脑海中公平的“扔一次硬币”。</p>
+<ul>
+<li>假定偶数<code>r</code>代表正面，奇数<code>r</code>代表反面。</li>
+<li>我可以选择一个值<code>r = random()</code>，并和你分享它的哈希值<code>h = sha256(r)</code>。 </li>
+<li>这时你可以开始猜硬币的正反。</li>
+<li>我告诉你值<code>r</code>的内容，得出胜负。同时你可以使用<code>sha256(r)</code>来检查我分享的哈希值<code>h</code>以确认我没有作弊。</li>
+</ul>
+</li>
+</ul>
+<h2 id="密钥生成函数"><a href="#密钥生成函数" class="headerlink" title="密钥生成函数"></a>密钥生成函数</h2><p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Key_derivation_function">密钥生成函数</a> (Key Derivation Functions) 与密码散列函数类似，用以产生一个固定长度的密钥。但是为了对抗穷举法攻击，密钥生成函数通常较慢。</p>
+<h3 id="密钥生成函数的应用"><a href="#密钥生成函数的应用" class="headerlink" title="密钥生成函数的应用"></a>密钥生成函数的应用</h3><ul>
+<li>将其结果作为其他加密算法的密钥，例如对称加密算法</li>
+<li>数据库中保存的用户密码为密文<ul>
+<li>针对每个用户随机生成一个<a target="_blank" rel="noopener" href="https://link.segmentfault.com/?url=https://en.wikipedia.org/wiki/Salt_(cryptography)">盐</a>，并存储盐，以及密钥生成函数对连接了盐的明文密码生成的哈希值 <code>KDF(password + salt)</code>。</li>
+<li>在验证登录请求时，使用输入的密码连接存储的盐重新计算哈希值<code>KDF(input + salt)</code>，并与存储的哈希值对比。</li>
+<li><strong>盐</strong>（Salt），在<a target="_blank" rel="noopener" href="https://link.segmentfault.com/?url=https://zh.wikipedia.org/wiki/%E5%AF%86%E7%A0%81%E5%AD%A6">密码学</a>中，是指在<a target="_blank" rel="noopener" href="https://link.segmentfault.com/?url=https://zh.wikipedia.org/wiki/%E6%95%A3%E5%88%97">散列</a>之前将散列内容（例如：密码）的任意固定位置插入特定的字符串。这个在散列中加入字符串的方式称为“加盐”。</li>
+<li>在大部分情况，盐是不需要保密的。</li>
+<li>通常情况下，当字段经过散列处理，会生成一段散列值，而散列后的值一般是无法通过特定算法得到原始字段的。但是某些情况，比如一个大型的<a target="_blank" rel="noopener" href="https://link.segmentfault.com/?url=https://zh.wikipedia.org/wiki/%E5%BD%A9%E8%99%B9%E8%A1%A8">彩虹表</a>，通过在表中搜索该SHA-1值，很有可能在极短的时间内找到该散列值对应的真实字段内容。</li>
+<li>加盐可以避免用户的短密码被彩虹表破解，也可以保护在不同网站使用相同密码的用户。</li>
+</ul>
+</li>
+</ul>
+<h2 id="对称加密"><a href="#对称加密" class="headerlink" title="对称加密"></a>对称加密</h2><p>对称加密使用以下几个方法来实现这个功能：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">keygen() -&gt; key  (这是一个随机方法)</span><br><span class="line"></span><br><span class="line">encrypt(plaintext: array&lt;byte&gt;, key) -&gt; array&lt;byte&gt;  (输出密文)</span><br><span class="line">decrypt(ciphertext: array&lt;byte&gt;, key) -&gt; array&lt;byte&gt;  (输出明文)</span><br></pre></td></tr></table></figure>
+
+<p>加密方法<code>encrypt()</code>输出的密文<code>ciphertext</code>很难在不知道<code>key</code>的情况下得出明文<code>plaintext</code>。<br>解密方法<code>decrypt()</code>有明显的正确性。对于给定密文及其密钥，解密方法必须输出明文：<code>decrypt(encrypt(m, k), k) = m</code>。</p>
+<p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">AES</a> 是现在常用的一种对称加密系统。在 Linux 下可以使用 openssl 工具：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">加密</span></span><br><span class="line">openssl aes-256-cbc -salt -in &#123;源文件名&#125; -out &#123;加密文件名&#125;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">解密</span></span><br><span class="line">openssl aes-256-cbc -d -in &#123;加密文件名&#125; -out &#123;解密文件名&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="对称加密的应用"><a href="#对称加密的应用" class="headerlink" title="对称加密的应用"></a>对称加密的应用</h3><ul>
+<li>加密不信任的云服务上存储的文件。对称加密和密钥生成函数配合起来，就可以使用密码加密文件： 将密码输入密钥生成函数生成密钥 <code>key = KDF(passphrase)</code>，然后存储<code>encrypt(file, key)</code>。</li>
+</ul>
+<h2 id="非对称加密"><a href="#非对称加密" class="headerlink" title="非对称加密"></a>非对称加密</h2><p>非对称加密的“非对称”代表在其环境中，使用两个具有不同功能的密钥： 一个是**私钥(private key)<strong>，不向外公布；另一个是</strong>公钥(public key)**，公布公钥不像公布对称加密的共享密钥那样可能影响加密体系的安全性。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">keygen() -&gt; (public key, private key)  (这是一个随机方法)</span><br><span class="line"></span><br><span class="line">encrypt(plaintext: array&lt;byte&gt;, public key) -&gt; array&lt;byte&gt;  (输出密文)</span><br><span class="line">decrypt(ciphertext: array&lt;byte&gt;, private key) -&gt; array&lt;byte&gt;  (输出明文)</span><br><span class="line"></span><br><span class="line">sign(message: array&lt;byte&gt;, private key) -&gt; array&lt;byte&gt;  (生成签名)</span><br><span class="line">verify(message: array&lt;byte&gt;, signature: array&lt;byte&gt;, public key) -&gt; bool  (验证签名是否是由和这个公钥相关的私钥生成的)</span><br></pre></td></tr></table></figure>
+
+<p>非对称的加密&#x2F;解密方法和对称的加密&#x2F;解密方法有类似的特征（<strong>公钥加密，私钥解密</strong>）：<br>信息在非对称加密中使用 <em>公钥</em> 加密， 且输出的密文很难在不知道 <em>私钥</em> 的情况下得出明文。<br>解密方法<code>decrypt()</code>有明显的正确性。 给定密文及私钥，解密方法一定会输出明文： <code>decrypt(encrypt(m, public key), private key) = m</code>。</p>
+<p>签名&#x2F;验证(sign&#x2F;verify)：</p>
+<p>在不知道 <em>私钥</em> 的情况下，不管需要签名的信息为何，很难计算出一个可以使 <code>verify(message, signature, public key)</code> 返回为真的签名。</p>
+<h3 id="非对称加密的应用"><a href="#非对称加密的应用" class="headerlink" title="非对称加密的应用"></a>非对称加密的应用</h3><ul>
+<li><p>PGP电子邮件加密](<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Pretty_Good_Privacy)%EF%BC%9A%E7%94%A8%E6%88%B7%E5%8F%AF%E4%BB%A5%E5%B0%86%E6%89%80%E4%BD%BF%E7%94%A8%E7%9A%84%E5%85%AC%E9%92%A5%E5%9C%A8%E7%BA%BF%E5%8F%91%E5%B8%83%EF%BC%8C%E6%AF%94%E5%A6%82%EF%BC%9APGP%E5%AF%86%E9%92%A5%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%88%96">https://en.wikipedia.org/wiki/Pretty_Good_Privacy)：用户可以将所使用的公钥在线发布，比如：PGP密钥服务器或</a> <a target="_blank" rel="noopener" href="https://keybase.io/">Keybase</a>。任何人都可以向他们发送加密的电子邮件。</p>
+</li>
+<li><p>聊天加密：像 <a target="_blank" rel="noopener" href="https://signal.org/">Signal</a> 和 <a target="_blank" rel="noopener" href="https://keybase.io/">Keybase</a> 使用非对称密钥来建立私密聊天。</p>
+</li>
+<li><p>软件签名：Git 支持用户对提交(commit)和标签(tag)进行GPG签名。任何人都可以使用软件开发者公布的签名公钥验证下载的已签名软件。</p>
+</li>
+</ul>
+<h3 id="密钥分发"><a href="#密钥分发" class="headerlink" title="密钥分发"></a>密钥分发</h3><p>非对称加密面对的主要挑战是，如何分发公钥并对应现实世界中存在的人或组织。</p>
+<ul>
+<li>Signal的信任模型：信任用户第一次使用时给出的身份(trust on first use)，支持线下(out-of-band)面对面交换公钥（Signal里的safety number）。</li>
+<li>PGP使用的是<a target="_blank" rel="noopener" href="https://link.segmentfault.com/?url=https://en.wikipedia.org/wiki/Web_of_trust">信任网络</a>。</li>
+<li>Keybase主要使用<a target="_blank" rel="noopener" href="https://link.segmentfault.com/?url=https://keybase.io/blog/chat-apps-softer-than-tofu">社交网络证明 (social proof)</a>。</li>
+</ul>
+</div><div class="article-licensing box"><div class="licensing-title"><p>missing semester - Security and Cryptography</p><p><a href="https://xinlong-chen.github.io/2023/03/07/missing-Security/">https://xinlong-chen.github.io/2023/03/07/missing-Security/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Xinlong-Chen</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-03-07</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-03-07</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="" rel="noopener" target="_blank" title="CC BY-NC-SA 4.0" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/missing-semester/">missing semester</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2023/03/07/missing-Potpourri/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">missing semester - Potpourri</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/03/07/missing-Metaprogramming/"><span class="level-item">missing semester - Metaprogramming</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><script src="https://utteranc.es/client.js" repo="Xinlong-Chen/Xinlong-Chen.github.io" issue-term="pathname" label="some-issue-label" theme="github-light" crossorigin="anonymous" async></script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="/img/avatar2.png" alt="Xinlong Chen"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Xinlong Chen</p><p class="is-size-6 is-block">os | db</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Canton</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">69</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories"><p class="title">9</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags"><p class="title">17</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/Xinlong-Chen" target="_blank" rel="noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/Xinlong-Chen"><i class="fab fa-github"></i></a></div></div></div><!--!--><div class="card widget" data-type="links"><div class="card-content"><div class="menu"><h3 class="menu-label">链接</h3><ul class="menu-list"><li><a class="level is-mobile" href="https://www.cnblogs.com/cxl-" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">cnblog</span></span><span class="level-right"><span class="level-item tag">www.cnblogs.com</span></span></a></li><li><a class="level is-mobile" href="https://blog.csdn.net/hrbust_cxl" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">csdn</span></span><span class="level-right"><span class="level-item tag">blog.csdn.net</span></span></a></li></ul></div></div></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/C/"><span class="level-start"><span class="level-item">C++</span></span><span class="level-end"><span class="level-item tag">22</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">分布式系统</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%89%8D%E7%AB%AF/"><span class="level-start"><span class="level-item">前端</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/"><span class="level-start"><span class="level-item">工具使用</span></span><span class="level-end"><span class="level-item tag">11</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">操作系统</span></span><span class="level-end"><span class="level-item tag">24</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">数据库系统</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%9D%82%E4%B8%83%E6%9D%82%E5%85%AB/"><span class="level-start"><span class="level-item">杂七杂八</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/%E7%A1%AC%E4%BB%B6/"><span class="level-start"><span class="level-item">硬件</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/"><span class="level-start"><span class="level-item">计算机网络</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></div></div></div><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">最新文章</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T01:35:51.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/missing-sum/">missing semester - 学习笔记（汇总）</a></p><p class="categories"><a href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/">工具使用</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T01:34:51.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/missing-Potpourri/">missing semester - Potpourri</a></p><p class="categories"><a href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/">工具使用</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T01:31:34.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/missing-Security/">missing semester - Security and Cryptography</a></p><p class="categories"><a href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/">工具使用</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T01:30:11.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/missing-Metaprogramming/">missing semester - Metaprogramming</a></p><p class="categories"><a href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/">工具使用</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T01:27:36.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/missing-debugging/">missing semester - Debugging and Profiling</a></p><p class="categories"><a href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/">工具使用</a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">归档</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2023/"><span class="level-start"><span class="level-item">2023</span></span><span class="level-end"><span class="level-item tag">64</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/"><span class="level-start"><span class="level-item">2021</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/cmu15445/"><span class="tag">cmu15445</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cpp/"><span class="tag">cpp</span><span class="tag">10</span></a></div><div class="control"><a class="tags has-addons" href="/tags/debug/"><span class="tag">debug</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/effective-C/"><span class="tag">effective C++</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/hitos/"><span class="tag">hitos</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux0-11/"><span class="tag">linux0.11</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux%E4%BD%BF%E7%94%A8/"><span class="tag">linux使用</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux%E7%BC%96%E7%A8%8B/"><span class="tag">linux编程</span><span class="tag">8</span></a></div><div class="control"><a class="tags has-addons" href="/tags/missing-semester/"><span class="tag">missing semester</span><span class="tag">11</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mit6-824/"><span class="tag">mit6.824</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mit6-s081/"><span class="tag">mit6.s081</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ostep/"><span class="tag">ostep</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/qt/"><span class="tag">qt</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/stl/"><span class="tag">stl</span><span class="tag">10</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%90%86%E8%AE%BA/"><span class="tag">操作系统理论</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%A0%91%E8%8E%93%E6%B4%BE/"><span class="tag">树莓派</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/"><span class="tag">网络编程</span><span class="tag">2</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/avatar3.png" alt="Xinlong-Chen&#039;s blog" height="28"></a><p class="is-size-7"><span>&copy; 2023 Xinlong-Chen</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-cn");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/mhchem.min.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>

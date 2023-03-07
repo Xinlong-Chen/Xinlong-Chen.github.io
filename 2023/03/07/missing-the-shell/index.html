@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>missing semester - The shell - Xinlong-Chen&#039;s blog</title><link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#3273dc"><meta name="application-name" content="Xinlong Chen&#039;s blog"><meta name="msapplication-TileImage" content="/img/avatar3.png"><meta name="msapplication-TileColor" content="#3273dc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Xinlong Chen&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="shell如何寻找诸如echo、date的命令？shell 是一个编程环境，所以它具备变量、条件、循环和函数。在 shell 中执行命令时，实际上是在执行一段 shell 可以解释执行的简短代码。如果用户要求 shell 执行某个指令，但是该指令并不是 shell 所了解的编程关键字，那么它会去查询 环境变量 （environment variable）$PATH，它会列出当 shell 接到某条"><meta property="og:type" content="blog"><meta property="og:title" content="missing semester - The shell"><meta property="og:url" content="https://xinlong-chen.github.io/2023/03/07/missing-the-shell/"><meta property="og:site_name" content="Xinlong-Chen&#039;s blog"><meta property="og:description" content="shell如何寻找诸如echo、date的命令？shell 是一个编程环境，所以它具备变量、条件、循环和函数。在 shell 中执行命令时，实际上是在执行一段 shell 可以解释执行的简短代码。如果用户要求 shell 执行某个指令，但是该指令并不是 shell 所了解的编程关键字，那么它会去查询 环境变量 （environment variable）$PATH，它会列出当 shell 接到某条"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919163039892.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919164243174.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919173634035.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919184918711.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919185026503.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919185011466.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919185355332.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919185703703.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919190119200.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919190206549.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919190655870.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919190916787.png"><meta property="article:published_time" content="2023-03-07T01:08:00.000Z"><meta property="article:modified_time" content="2023-03-07T01:13:16.457Z"><meta property="article:author" content="Xinlong-Chen"><meta property="article:tag" content="missing semester"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919163039892.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://xinlong-chen.github.io/2023/03/07/missing-the-shell/"},"headline":"missing semester - The shell","image":["https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919163039892.png","https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919164243174.png","https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919173634035.png","https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919184918711.png","https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919185026503.png","https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919185011466.png","https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919185355332.png","https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919185703703.png","https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919190119200.png","https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919190206549.png","https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919190655870.png","https://xinlong-chen.github.io/2023/03/07/missing-the-shell/image-20210919190916787.png"],"datePublished":"2023-03-07T01:08:00.000Z","dateModified":"2023-03-07T01:13:16.457Z","author":{"@type":"Person","name":"Xinlong-Chen"},"publisher":{"@type":"Organization","name":"Xinlong-Chen's blog","logo":{"@type":"ImageObject","url":"https://xinlong-chen.github.io/img/avatar3.png"}},"description":"shell如何寻找诸如echo、date的命令？shell 是一个编程环境，所以它具备变量、条件、循环和函数。在 shell 中执行命令时，实际上是在执行一段 shell 可以解释执行的简短代码。如果用户要求 shell 执行某个指令，但是该指令并不是 shell 所了解的编程关键字，那么它会去查询 环境变量 （environment variable）$PATH，它会列出当 shell 接到某条"}</script><link rel="canonical" href="https://xinlong-chen.github.io/2023/03/07/missing-the-shell/"><link rel="icon" href="/img/avatar3.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/avatar3.png" alt="Xinlong-Chen&#039;s blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-03-07T01:08:00.000Z" title="3/7/2023, 9:08:00 AM">2023-03-07</time>发表</span><span class="level-item"><time dateTime="2023-03-07T01:13:16.457Z" title="3/7/2023, 9:13:16 AM">2023-03-07</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/">工具使用</a></span><span class="level-item">11 分钟读完 (大约1633个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">missing semester - The shell</h1><div class="content"><h2 id="shell如何寻找诸如echo、date的命令？"><a href="#shell如何寻找诸如echo、date的命令？" class="headerlink" title="shell如何寻找诸如echo、date的命令？"></a>shell如何寻找诸如echo、date的命令？</h2><p>shell 是一个编程环境，所以它具备变量、条件、循环和函数。<strong>在 shell 中执行命令时，实际上是在执行一段 shell 可以解释执行的简短代码。</strong>如果用户要求 shell 执行某个指令，但是该指令并不是 shell 所了解的编程关键字，那么它会去查询 <em>环境变量</em> （<em>environment variable</em>）<code>$PATH</code>，它会列出当 shell 接到某条指令时，进行程序搜索的路径。</p>
+<p>当执行 <code>echo</code> 命令时，shell 了解到需要执行 <code>echo</code> 这个程序，随后它便会在 <code>$PATH</code> 中搜索由 <code>:</code> 所分割的一系列目录，基于名字搜索该程序。当找到该程序时便执行。</p>
+<p><strong>确定某个程序名代表的是哪个具体的程序，可以使用 <code>which</code> 程序。</strong></p>
+<span id="more"></span>
+<p><img src="/2023/03/07/missing-the-shell/image-20210919163039892.png" alt="image-20210919163039892"></p>
+<h2 id="Navigating-in-the-shell"><a href="#Navigating-in-the-shell" class="headerlink" title="Navigating in the shell"></a>Navigating in the shell</h2><p>以Linux&#x2F;Mac OS为例说明文件系统的使用：</p>
+<p>路径 <code>/</code> 代表的是系统的根目录。</p>
+<p>如果某个路径以 <code>/</code> 开头，那么它是一个 <em>绝对路径</em>。</p>
+<p>其他的路径都是 <em>相对路径</em> 。相对路径是指相对于当前工作目录的路径，当前工作目录可以使用 <code>pwd</code> 命令来获取。</p>
+<p>切换目录需要使用 <code>cd</code> 命令。</p>
+<p>在路径中，<code>.</code> 表示的是当前目录，而 <code>..</code> 表示上级目录（空目录中也包含<code>.</code>和<code>..</code> ）。</p>
+<p>一般来说，当运行一个程序时，如果没有指定路径，则该程序会在当前目录下执行。</p>
+<p>大多数的命令接受标记（Flag）和选项（带有值的标记）（Option），它们以 <code>-</code> 开头，并可以改变程序的行为。通常，在执行程序时使用 <code>-h</code> 或 <code>--help</code> 标记可以打印帮助信息，以便了解有哪些可用的标记或选项。</p>
+<p><img src="/2023/03/07/missing-the-shell/image-20210919164243174.png" alt="image-20210919164243174"></p>
+<p>这个参数可以打印出更加详细地列出目录下文件或文件夹的信息。</p>
+<p>第一个字符 <code>d</code> 表示 <code>missing</code> 是一个目录。</p>
+<p>然后接下来的九个字符，每三个字符构成一组（<code>rwx</code>）。它们分别代表了文件所有者（<code>missing</code>），用户组（<code>users</code>） 以及其他所有人具有的权限。其中 <code>-</code> 表示该用户不具备相应的权限。</p>
+<p>为了进入某个文件夹，用户需要具备该文件夹以及其父文件夹的“搜索”权限（以“可执行”：<code>x</code>）权限表示。</p>
+<p>为了列出它的包含的内容，用户必须对该文件夹具备读权限（<code>r</code>）。</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>完成动作</th>
+<th>注意事项</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pwd</code></td>
+<td>打印当前工作目录</td>
+<td></td>
+</tr>
+<tr>
+<td><code>cd</code></td>
+<td>切换目录</td>
+<td>cd -: 切换空间</td>
+</tr>
+<tr>
+<td><code>ls</code></td>
+<td>查看指定目录下包含哪些文件</td>
+<td></td>
+</tr>
+<tr>
+<td><code>mv</code></td>
+<td>重命名或移动文件</td>
+<td>source-&gt;dest</td>
+</tr>
+<tr>
+<td><code>cp</code></td>
+<td>拷贝文件</td>
+<td>source-&gt;dest</td>
+</tr>
+<tr>
+<td><code>rm</code></td>
+<td>删除文件</td>
+<td>删除文件夹需要使用-r（递归）标记</td>
+</tr>
+<tr>
+<td><code>mkdir</code></td>
+<td>新建文件夹</td>
+<td>空格间隔会创建多个文件夹</td>
+</tr>
+<tr>
+<td><code>rmdir</code></td>
+<td>删除文件夹</td>
+<td>只能删除空文件夹</td>
+</tr>
+</tbody></table>
+<h2 id="Connecting-programs"><a href="#Connecting-programs" class="headerlink" title="Connecting programs"></a>Connecting programs</h2><p>在 shell 中，程序有两个主要的“流”：</p>
+<ul>
+<li>输入流：当程序尝试读取信息时，它们会从输入流中进行读取。</li>
+<li>输出流：当程序打印信息时，它们会将信息输出到输出流中。</li>
+</ul>
+<p>通常，一个程序的输入输出流都是终端（程序会默认打开0-2三个fd表示输入、输出、错误）。</p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&lt;</code> file1</td>
+<td>重定向file1至输入流</td>
+</tr>
+<tr>
+<td><code>&gt;</code> file2</td>
+<td>重定向file2至输出流</td>
+</tr>
+<tr>
+<td><code>&gt;&gt;</code> file3</td>
+<td>向一个文件追加内容</td>
+</tr>
+<tr>
+<td>command1 &#96;</td>
+<td>&#96; command2</td>
+</tr>
+</tbody></table>
+<p><img src="/2023/03/07/missing-the-shell/image-20210919173634035.png" alt="image-20210919173634035"></p>
+<h2 id="A-versatile-and-powerful-tool"><a href="#A-versatile-and-powerful-tool" class="headerlink" title="A versatile and powerful tool"></a>A versatile and powerful tool</h2><p>对于大多数的类 Unix 系统，根用户（root user）是非常特殊的。</p>
+<p>根用户几乎不受任何限制，他可以创建、读取、更新和删除系统中的任何文件。 </p>
+<p>通常在我们并不会以根用户的身份直接登录系统，因为这样可能会因为某些错误的操作而破坏系统。 在需要的时候使用 <code>sudo</code> 命令。顾名思义，它的作用是可以以 su（super user 或 root 的简写）的身份执行一些操作。 当遇到拒绝访问（permission denied）的错误时，通常是因为此时必须是根用户才能操作。</p>
+<p>对于<code>|</code>、<code>&gt;</code>、和 <code>&lt;</code>，需要注意一点，sudo需要加在对应程序前（修改显示器亮度，前者不行，后者可以，<code>tee</code>用于读取标准输入的数据，并将其内容输出成文件）。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">sudo <span class="built_in">echo</span> 3 &gt; brightness</span></span><br><span class="line">An error occurred while redirecting file &#x27;brightness&#x27;</span><br><span class="line">open: Permission denied</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">echo</span> 3 | sudo <span class="built_in">tee</span> brightness</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Exercises"><a href="#Exercises" class="headerlink" title="Exercises"></a>Exercises</h2><ol>
+<li>在 <code>/tmp</code> 下新建一个名为 <code>missing</code> 的文件夹。</li>
+</ol>
+<p><img src="/2023/03/07/missing-the-shell/image-20210919184918711.png" alt="image-20210919184918711"></p>
+<ol start="2">
+<li>用 <code>man</code> 查看程序 <code>touch</code> 的使用手册。</li>
+</ol>
+<p><img src="/2023/03/07/missing-the-shell/image-20210919185026503.png" alt="image-20210919185026503"></p>
+<ol start="3">
+<li>用 <code>touch</code> 在 <code>missing</code> 文件夹中新建一个叫 <code>semester</code> 的文件。</li>
+</ol>
+<p><img src="/2023/03/07/missing-the-shell/image-20210919185011466.png" alt="image-20210919185011466"></p>
+<ol start="4">
+<li>将以下内容一行一行地写入 <code>semester</code> 文件：</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/sh</span></span><br><span class="line">curl --head --silent https://missing.csail.mit.edu</span><br></pre></td></tr></table></figure>
+
+<p>做法1:(\代表转义)</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo \#\!/bin/sh &gt; semester</span><br><span class="line">echo &quot;curl --head --silent https://missing.csail.mit.edu&quot; &gt;&gt; semester</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2023/03/07/missing-the-shell/image-20210919185355332.png" alt="image-20210919185355332"></p>
+<p>做法2:(用单引号括住字符(“ ‘)保留了引号内每个字符的文字值)</p>
+<blockquote>
+<p>Enclosing characters in single quotes (‘’’) preserves the literal value of each character within the quotes. A single quote may not occur between single quotes, even when preceded by a backslash.</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;#!/bin/sh&#x27; &gt; semester</span><br><span class="line">echo &quot;curl --head --silent https://missing.csail.mit.edu&quot; &gt;&gt; semester</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2023/03/07/missing-the-shell/image-20210919185703703.png" alt="image-20210919185703703"></p>
+<ol start="5">
+<li>尝试执行这个文件。例如，将该脚本的路径（<code>./semester</code>）输入到您的shell中并回车。如果程序无法执行，请使用 <code>ls</code> 命令来获取信息并理解其不能执行的原因。</li>
+</ol>
+<p><img src="/2023/03/07/missing-the-shell/image-20210919190119200.png" alt="image-20210919190119200"></p>
+<ol start="6">
+<li>查看 <code>chmod</code> 的手册(例如，使用 <code>man chmod</code> 命令)</li>
+</ol>
+<p><img src="/2023/03/07/missing-the-shell/image-20210919190206549.png" alt="image-20210919190206549"></p>
+<ol start="7">
+<li>使用 <code>chmod</code> 命令改变权限，使 <code>./semester</code> 能够成功执行</li>
+</ol>
+<p><img src="/2023/03/07/missing-the-shell/image-20210919190655870.png" alt="image-20210919190655870"></p>
+<ol start="8">
+<li>使用 <code>|</code> 和 <code>&gt;</code> ，将 <code>semester</code> 文件输出的最后更改日期信息，写入主目录下的 <code>last-modified.txt</code> 的文件中</li>
+</ol>
+<p><img src="/2023/03/07/missing-the-shell/image-20210919190916787.png" alt="image-20210919190916787"></p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>missing semester - The shell</p><p><a href="https://xinlong-chen.github.io/2023/03/07/missing-the-shell/">https://xinlong-chen.github.io/2023/03/07/missing-the-shell/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Xinlong-Chen</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-03-07</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-03-07</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="" rel="noopener" target="_blank" title="CC BY-NC-SA 4.0" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/missing-semester/">missing semester</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2023/03/07/missing-shell-tools/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">missing semester - Shell Tools and Scripting</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/03/07/linux-folder-effect/"><span class="level-item">Linux各文件夹作用</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><script src="https://utteranc.es/client.js" repo="Xinlong-Chen/Xinlong-Chen.github.io" issue-term="pathname" label="some-issue-label" theme="github-light" crossorigin="anonymous" async></script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="/img/avatar2.png" alt="Xinlong Chen"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Xinlong Chen</p><p class="is-size-6 is-block">os | db</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Canton</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">69</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories"><p class="title">9</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags"><p class="title">17</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/Xinlong-Chen" target="_blank" rel="noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/Xinlong-Chen"><i class="fab fa-github"></i></a></div></div></div><!--!--><div class="card widget" data-type="links"><div class="card-content"><div class="menu"><h3 class="menu-label">链接</h3><ul class="menu-list"><li><a class="level is-mobile" href="https://www.cnblogs.com/cxl-" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">cnblog</span></span><span class="level-right"><span class="level-item tag">www.cnblogs.com</span></span></a></li><li><a class="level is-mobile" href="https://blog.csdn.net/hrbust_cxl" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">csdn</span></span><span class="level-right"><span class="level-item tag">blog.csdn.net</span></span></a></li></ul></div></div></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/C/"><span class="level-start"><span class="level-item">C++</span></span><span class="level-end"><span class="level-item tag">22</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">分布式系统</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%89%8D%E7%AB%AF/"><span class="level-start"><span class="level-item">前端</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/"><span class="level-start"><span class="level-item">工具使用</span></span><span class="level-end"><span class="level-item tag">11</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">操作系统</span></span><span class="level-end"><span class="level-item tag">24</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">数据库系统</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%9D%82%E4%B8%83%E6%9D%82%E5%85%AB/"><span class="level-start"><span class="level-item">杂七杂八</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/%E7%A1%AC%E4%BB%B6/"><span class="level-start"><span class="level-item">硬件</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/"><span class="level-start"><span class="level-item">计算机网络</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></div></div></div><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">最新文章</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T01:35:51.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/missing-sum/">missing semester - 学习笔记（汇总）</a></p><p class="categories"><a href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/">工具使用</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T01:34:51.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/missing-Potpourri/">missing semester - Potpourri</a></p><p class="categories"><a href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/">工具使用</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T01:31:34.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/missing-Security/">missing semester - Security and Cryptography</a></p><p class="categories"><a href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/">工具使用</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T01:30:11.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/missing-Metaprogramming/">missing semester - Metaprogramming</a></p><p class="categories"><a href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/">工具使用</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-03-07T01:27:36.000Z">2023-03-07</time></p><p class="title"><a href="/2023/03/07/missing-debugging/">missing semester - Debugging and Profiling</a></p><p class="categories"><a href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/">工具使用</a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">归档</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2023/"><span class="level-start"><span class="level-item">2023</span></span><span class="level-end"><span class="level-item tag">64</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/"><span class="level-start"><span class="level-item">2021</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/cmu15445/"><span class="tag">cmu15445</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cpp/"><span class="tag">cpp</span><span class="tag">10</span></a></div><div class="control"><a class="tags has-addons" href="/tags/debug/"><span class="tag">debug</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/effective-C/"><span class="tag">effective C++</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/hitos/"><span class="tag">hitos</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux0-11/"><span class="tag">linux0.11</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux%E4%BD%BF%E7%94%A8/"><span class="tag">linux使用</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux%E7%BC%96%E7%A8%8B/"><span class="tag">linux编程</span><span class="tag">8</span></a></div><div class="control"><a class="tags has-addons" href="/tags/missing-semester/"><span class="tag">missing semester</span><span class="tag">11</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mit6-824/"><span class="tag">mit6.824</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mit6-s081/"><span class="tag">mit6.s081</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ostep/"><span class="tag">ostep</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/qt/"><span class="tag">qt</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/stl/"><span class="tag">stl</span><span class="tag">10</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%90%86%E8%AE%BA/"><span class="tag">操作系统理论</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%A0%91%E8%8E%93%E6%B4%BE/"><span class="tag">树莓派</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/"><span class="tag">网络编程</span><span class="tag">2</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/avatar3.png" alt="Xinlong-Chen&#039;s blog" height="28"></a><p class="is-size-7"><span>&copy; 2023 Xinlong-Chen</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-cn");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/mhchem.min.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
