@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>MySQL - InnoDB 行格式 - Xinlong-Chen&#039;s blog</title><link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#3273dc"><meta name="application-name" content="Xinlong Chen&#039;s blog"><meta name="msapplication-TileImage" content="/img/avatar3.png"><meta name="msapplication-TileColor" content="#3273dc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Xinlong Chen&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="存储引擎 InnoDB（当前常用的存储引擎）  MyISAM（B+树上存储一个数据指针，不支持事务）  Memory（面向内存）   InnoDB 将数据划分为若干个页，以页作为磁盘和内存之间交互的基本单位，InnoDB中页的大小一般为 16 KB。在一般情况下，一次最少从磁盘中读取16KB的内容到内存中，一次最少把内存中的16KB内容刷新到磁盘中。 行格式行格式：一行记录（row）如何用字符串表"><meta property="og:type" content="blog"><meta property="og:title" content="MySQL - InnoDB 行格式"><meta property="og:url" content="https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/"><meta property="og:site_name" content="Xinlong-Chen&#039;s blog"><meta property="og:description" content="存储引擎 InnoDB（当前常用的存储引擎）  MyISAM（B+树上存储一个数据指针，不支持事务）  Memory（面向内存）   InnoDB 将数据划分为若干个页，以页作为磁盘和内存之间交互的基本单位，InnoDB中页的大小一般为 16 KB。在一般情况下，一次最少从磁盘中读取16KB的内容到内存中，一次最少把内存中的16KB内容刷新到磁盘中。 行格式行格式：一行记录（row）如何用字符串表"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/04-01.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/04-11.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/04-14.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/04-15.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/04-20.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/04-18.png"><meta property="article:published_time" content="2023-08-28T01:55:52.000Z"><meta property="article:modified_time" content="2023-08-28T04:34:26.923Z"><meta property="article:author" content="Xinlong-Chen"><meta property="article:tag" content="mysql"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/04-01.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/"},"headline":"MySQL - InnoDB 行格式","image":["https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/04-01.png","https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/04-11.png","https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/04-14.png","https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/04-15.png","https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/04-20.png","https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/04-18.png"],"datePublished":"2023-08-28T01:55:52.000Z","dateModified":"2023-08-28T04:34:26.923Z","author":{"@type":"Person","name":"Xinlong-Chen"},"publisher":{"@type":"Organization","name":"Xinlong-Chen's blog","logo":{"@type":"ImageObject","url":"https://xinlong-chen.github.io/img/avatar3.png"}},"description":"存储引擎 InnoDB（当前常用的存储引擎）  MyISAM（B+树上存储一个数据指针，不支持事务）  Memory（面向内存）   InnoDB 将数据划分为若干个页，以页作为磁盘和内存之间交互的基本单位，InnoDB中页的大小一般为 16 KB。在一般情况下，一次最少从磁盘中读取16KB的内容到内存中，一次最少把内存中的16KB内容刷新到磁盘中。 行格式行格式：一行记录（row）如何用字符串表"}</script><link rel="canonical" href="https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/"><link rel="icon" href="/img/avatar3.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/avatar3.png" alt="Xinlong-Chen&#039;s blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-08-28T01:55:52.000Z" title="2023/8/28 上午9:55:52">2023-08-28</time>发表</span><span class="level-item"><time dateTime="2023-08-28T04:34:26.923Z" title="2023/8/28 下午12:34:26">2023-08-28</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/">数据库系统</a></span><span class="level-item">8 分钟读完 (大约1157个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">MySQL - InnoDB 行格式</h1><div class="content"><h3 id="存储引擎"><a href="#存储引擎" class="headerlink" title="存储引擎"></a>存储引擎</h3><ul>
+<li><p><code>InnoDB</code>（当前常用的存储引擎）</p>
+</li>
+<li><p><code>MyISAM</code>（B+树上存储一个数据指针，不支持事务）</p>
+</li>
+<li><p><code>Memory</code>（面向内存）</p>
+</li>
+</ul>
+<p><code>InnoDB </code>将数据划分为若干个页，以页作为磁盘和内存之间交互的基本单位，InnoDB中页的大小一般为 <strong>16 KB</strong>。在一般情况下，一次最少从磁盘中读取16KB的内容到内存中，一次最少把内存中的16KB内容刷新到磁盘中。</p>
+<h3 id="行格式"><a href="#行格式" class="headerlink" title="行格式"></a>行格式</h3><p>行格式：一行记录（row）如何用字符串表示，表示了记录在磁盘上的存放方式。</p>
+<p>行格式主要有如下几种：</p>
+<ul>
+<li><code>Compact</code></li>
+<li><code>Redundant</code></li>
+<li><code>Dynamic</code></li>
+<li><code>Compressed</code></li>
+</ul>
+<span id="more"></span>
+
+<h4 id="指定行格式"><a href="#指定行格式" class="headerlink" title="指定行格式"></a>指定行格式</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE 表名 ROW_FORMAT=行格式名称</span><br></pre></td></tr></table></figure>
+
+<h4 id="Compact-行格式"><a href="#Compact-行格式" class="headerlink" title="Compact 行格式"></a><code>Compact</code> 行格式</h4><p><img src="/2023/08/28/mysql-record-struct/04-01.png" alt="COMPACT行格式"></p>
+<p>记录头信息如下表示：</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>大小（单位：bit）</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>预留位1</code></td>
+<td><code>1</code></td>
+<td>没有使用</td>
+</tr>
+<tr>
+<td><code>预留位2</code></td>
+<td><code>1</code></td>
+<td>没有使用</td>
+</tr>
+<tr>
+<td><code>delete_mask</code></td>
+<td><code>1</code></td>
+<td>标记该记录是否被删除</td>
+</tr>
+<tr>
+<td><code>min_rec_mask</code></td>
+<td><code>1</code></td>
+<td>B+树的每层非叶子节点中的最小记录都会添加该标记</td>
+</tr>
+<tr>
+<td><code>n_owned</code></td>
+<td><code>4</code></td>
+<td>表示当前记录拥有的记录数</td>
+</tr>
+<tr>
+<td><code>heap_no</code></td>
+<td><code>13</code></td>
+<td>表示当前记录在记录堆的位置信息</td>
+</tr>
+<tr>
+<td><code>record_type</code></td>
+<td><code>3</code></td>
+<td>表示当前记录的类型，<code>0</code>表示普通记录，<code>1</code>表示B+树非叶子节点记录，<code>2</code>表示最小记录，<code>3</code>表示最大记录</td>
+</tr>
+<tr>
+<td><code>next_record</code></td>
+<td><code>16</code></td>
+<td>表示下一条记录的相对位置</td>
+</tr>
+</tbody></table>
+<p><code>MySQL</code>会为每个记录默认的添加一些列（也称为<code>隐藏列</code>），具体的列如下：</p>
+<blockquote>
+<p>InnoDB存储引擎会为每条记录都添加 <strong>transaction_id</strong> 和 <strong>roll_pointer</strong> 这两个列，但是 <strong>row_id</strong> 是可选的（在没有自定义主键以及Unique键的情况下才会添加该列）。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>列名</th>
+<th>是否必须</th>
+<th>占用空间</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>row_id</code></td>
+<td>否</td>
+<td><code>6</code>字节</td>
+<td>行ID，唯一标识一条记录</td>
+</tr>
+<tr>
+<td><code>transaction_id</code></td>
+<td>是</td>
+<td><code>6</code>字节</td>
+<td>事务ID</td>
+</tr>
+<tr>
+<td><code>roll_pointer</code></td>
+<td>是</td>
+<td><code>7</code>字节</td>
+<td>回滚指针</td>
+</tr>
+</tbody></table>
+<p>例子：</p>
+<p>建表：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; CREATE TABLE record_format_demo (</span><br><span class="line">    -&gt;     c1 VARCHAR(10),</span><br><span class="line">    -&gt;     c2 VARCHAR(10) NOT NULL,</span><br><span class="line">    -&gt;     c3 CHAR(10),</span><br><span class="line">    -&gt;     c4 VARCHAR(10)</span><br><span class="line">    -&gt; ) CHARSET=ascii ROW_FORMAT=COMPACT;</span><br><span class="line">Query OK, 0 rows affected (0.03 sec)</span><br></pre></td></tr></table></figure>
+
+<p>插入数据：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; INSERT INTO record_format_demo(c1, c2, c3, c4) VALUES(&#x27;aaaa&#x27;, &#x27;bbb&#x27;, &#x27;cc&#x27;, &#x27;d&#x27;), (&#x27;eeee&#x27;, &#x27;fff&#x27;, NULL, NULL);</span><br><span class="line">Query OK, 2 rows affected (0.02 sec)</span><br><span class="line">Records: 2  Duplicates: 0  Warnings: 0</span><br></pre></td></tr></table></figure>
+
+<p>上面的SQL插入了两行数据，其对应的<code>Compact</code> 行格式如下所示：</p>
+<p><img src="/2023/08/28/mysql-record-struct/04-11.png" alt="Compact 行格式例子"></p>
+<blockquote>
+<p>变长字符集的 <code>CHAR(M)</code> 类型的列要求至少占用 <code>M</code> 个字符。存在碎片，但在改变记录时更好处理。</p>
+</blockquote>
+<h4 id="Redundant-行格式"><a href="#Redundant-行格式" class="headerlink" title="Redundant 行格式"></a><code>Redundant</code> 行格式</h4><p><code>Redundant</code> 行格式是 <code>MySQL5.0</code> 之前用的一种行格式。</p>
+<p><img src="/2023/08/28/mysql-record-struct/04-14.png" alt="Redundant 行格式"></p>
+<ul>
+<li><p>字段长度偏移列表</p>
+<ul>
+<li>字段长度：<code>Redundant</code>行格式会把该条记录中所有列（包括<code>隐藏列</code>）的长度信息都按照逆序存储到<code>字段长度偏移列表</code>。</li>
+<li>偏移：采用两个相邻数值的差值来计算各个列值的长度。</li>
+</ul>
+</li>
+<li><p><code>Redundant</code>行格式的记录头信息占用<code>6</code>字节，<code>48</code>个二进制位，这些二进制位代表的意思如下：</p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>大小（单位：bit）</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>预留位1</code></td>
+<td><code>1</code></td>
+<td>没有使用</td>
+</tr>
+<tr>
+<td><code>预留位2</code></td>
+<td><code>1</code></td>
+<td>没有使用</td>
+</tr>
+<tr>
+<td><code>delete_mask</code></td>
+<td><code>1</code></td>
+<td>标记该记录是否被删除</td>
+</tr>
+<tr>
+<td><code>min_rec_mask</code></td>
+<td><code>1</code></td>
+<td>B+树的每层非叶子节点中的最小记录都会添加该标记</td>
+</tr>
+<tr>
+<td><code>n_owned</code></td>
+<td><code>4</code></td>
+<td>表示当前记录拥有的记录数</td>
+</tr>
+<tr>
+<td><code>heap_no</code></td>
+<td><code>13</code></td>
+<td>表示当前记录在页面堆的位置信息</td>
+</tr>
+<tr>
+<td><code>n_field</code></td>
+<td><code>10</code></td>
+<td>表示记录中列的数量</td>
+</tr>
+<tr>
+<td><code>1byte_offs_flag</code></td>
+<td><code>1</code></td>
+<td>标记字段长度偏移列表中每个列对应的偏移量是使用1字节还是2字节表示的</td>
+</tr>
+<tr>
+<td><code>next_record</code></td>
+<td><code>16</code></td>
+<td>表示下一条记录的相对位置</td>
+</tr>
+</tbody></table>
+<p><img src="/2023/08/28/mysql-record-struct/04-15.png" alt="Redundant 行格式例子"></p>
+<ul>
+<li><p>溢出则存储在溢出页上。</p>
+<ul>
+<li>一个页一般是<code>16KB</code>，当记录中的数据太多，当前页放不下的时候，会把多余的数据存储到其他页中，这种现象称为<code>行溢出</code>。</li>
+</ul>
+<p><img src="/2023/08/28/mysql-record-struct/04-20.png" alt="溢出"></p>
+</li>
+</ul>
+<h4 id="Dynamic-和-Compressed-行格式"><a href="#Dynamic-和-Compressed-行格式" class="headerlink" title="Dynamic 和 Compressed 行格式"></a><code>Dynamic</code> 和 <code>Compressed</code> 行格式</h4><ul>
+<li><code>Dynamic</code>，它们不会在记录的真实数据处存储字段真实数据的前<code>768</code>个字节，而是把所有的字节都存储到其他页面中，只在记录的真实数据处存储其他页面的地址，就像这样：<ul>
+<li><code>MySQL</code>版本<code>5.7</code>的默认行格式就是<code>Dynamic</code></li>
+</ul>
+</li>
+</ul>
+<p><img src="/2023/08/28/mysql-record-struct/04-18.png" alt="img"></p>
+<ul>
+<li><code>Compressed</code> 行格式，在 <code>Dynamic</code> 格式的基础上采用压缩算法对页面进行压缩，以节省空间。</li>
+</ul>
+</div><div class="article-licensing box"><div class="licensing-title"><p>MySQL - InnoDB 行格式</p><p><a href="https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/">https://xinlong-chen.github.io/2023/08/28/mysql-record-struct/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Xinlong-Chen</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-08-28</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-08-28</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="" rel="noopener" target="_blank" title="CC BY-NC-SA 4.0" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/mysql/">mysql</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/08/27/mysql-log-system/"><span class="level-item">MySQL - 日志系统</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><script src="https://utteranc.es/client.js" repo="Xinlong-Chen/Xinlong-Chen.github.io" issue-term="pathname" label="some-issue-label" theme="github-light" crossorigin="anonymous" async></script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="/img/avatar2.png" alt="Xinlong Chen"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Xinlong Chen</p><p class="is-size-6 is-block">os | db</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Canton</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">96</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories"><p class="title">10</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags"><p class="title">21</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/Xinlong-Chen" target="_blank" rel="noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/Xinlong-Chen"><i class="fab fa-github"></i></a></div></div></div><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#存储引擎"><span class="level-left"><span class="level-item">1</span><span class="level-item">存储引擎</span></span></a></li><li><a class="level is-mobile" href="#行格式"><span class="level-left"><span class="level-item">2</span><span class="level-item">行格式</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#指定行格式"><span class="level-left"><span class="level-item">2.1</span><span class="level-item">指定行格式</span></span></a></li><li><a class="level is-mobile" href="#Compact-行格式"><span class="level-left"><span class="level-item">2.2</span><span class="level-item">Compact 行格式</span></span></a></li><li><a class="level is-mobile" href="#Redundant-行格式"><span class="level-left"><span class="level-item">2.3</span><span class="level-item">Redundant 行格式</span></span></a></li><li><a class="level is-mobile" href="#Dynamic-和-Compressed-行格式"><span class="level-left"><span class="level-item">2.4</span><span class="level-item">Dynamic 和 Compressed 行格式</span></span></a></li></ul></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div><div class="card widget" data-type="links"><div class="card-content"><div class="menu"><h3 class="menu-label">链接</h3><ul class="menu-list"><li><a class="level is-mobile" href="https://www.cnblogs.com/cxl-" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">cnblog</span></span><span class="level-right"><span class="level-item tag">www.cnblogs.com</span></span></a></li><li><a class="level is-mobile" href="https://blog.csdn.net/hrbust_cxl" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">csdn</span></span><span class="level-right"><span class="level-item tag">blog.csdn.net</span></span></a></li></ul></div></div></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/C/"><span class="level-start"><span class="level-item">C++</span></span><span class="level-end"><span class="level-item tag">23</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">分布式系统</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%89%8D%E7%AB%AF/"><span class="level-start"><span class="level-item">前端</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/"><span class="level-start"><span class="level-item">工具使用</span></span><span class="level-end"><span class="level-item tag">11</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">操作系统</span></span><span class="level-end"><span class="level-item tag">40</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">数据库系统</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%9D%82%E4%B8%83%E6%9D%82%E5%85%AB/"><span class="level-start"><span class="level-item">杂七杂八</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/%E7%A1%AC%E4%BB%B6/"><span class="level-start"><span class="level-item">硬件</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/%E7%AE%97%E6%B3%95/"><span class="level-start"><span class="level-item">算法</span></span><span class="level-end"><span class="level-item tag">6</span></span></a></li><li><a class="level is-mobile" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/"><span class="level-start"><span class="level-item">计算机网络</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></div></div></div><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">最新文章</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-08-28T01:55:52.000Z">2023-08-28</time></p><p class="title"><a href="/2023/08/28/mysql-record-struct/">MySQL - InnoDB 行格式</a></p><p class="categories"><a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/">数据库系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-08-27T14:55:52.000Z">2023-08-27</time></p><p class="title"><a href="/2023/08/27/mysql-log-system/">MySQL - 日志系统</a></p><p class="categories"><a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/">数据库系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-08-26T13:00:52.000Z">2023-08-26</time></p><p class="title"><a href="/2023/08/26/mysql-architecture/">MySQL - 基础架构</a></p><p class="categories"><a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/">数据库系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-05-29T12:53:03.000Z">2023-05-29</time></p><p class="title"><a href="/2023/05/29/raft-braft-lease/">braft - lease机制</a></p><p class="categories"><a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-04-17T02:03:44.000Z">2023-04-17</time></p><p class="title"><a href="/2023/04/17/cpp-clear-vector/">CPP - 清空vector</a></p><p class="categories"><a href="/categories/C/">C++</a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">归档</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2023/"><span class="level-start"><span class="level-item">2023</span></span><span class="level-end"><span class="level-item tag">67</span></span></a></li><li><a class="level is-mobile" href="/archives/2022/"><span class="level-start"><span class="level-item">2022</span></span><span class="level-end"><span class="level-item tag">25</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/"><span class="level-start"><span class="level-item">2021</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/algorithm/"><span class="tag">algorithm</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cmu15445/"><span class="tag">cmu15445</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cpp/"><span class="tag">cpp</span><span class="tag">11</span></a></div><div class="control"><a class="tags has-addons" href="/tags/debug/"><span class="tag">debug</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/effective-C/"><span class="tag">effective C++</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/hitos/"><span class="tag">hitos</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux0-11/"><span class="tag">linux0.11</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux%E4%BD%BF%E7%94%A8/"><span class="tag">linux使用</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux%E7%BC%96%E7%A8%8B/"><span class="tag">linux编程</span><span class="tag">8</span></a></div><div class="control"><a class="tags has-addons" href="/tags/missing-semester/"><span class="tag">missing semester</span><span class="tag">11</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mit6-824/"><span class="tag">mit6.824</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mit6-s081/"><span class="tag">mit6.s081</span><span class="tag">9</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mysql/"><span class="tag">mysql</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ostep/"><span class="tag">ostep</span><span class="tag">13</span></a></div><div class="control"><a class="tags has-addons" href="/tags/qt/"><span class="tag">qt</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/stl/"><span class="tag">stl</span><span class="tag">10</span></a></div><div class="control"><a class="tags has-addons" href="/tags/xv6/"><span class="tag">xv6</span><span class="tag">9</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"><span class="tag">分布式系统</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%90%86%E8%AE%BA/"><span class="tag">操作系统理论</span><span class="tag">13</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%A0%91%E8%8E%93%E6%B4%BE/"><span class="tag">树莓派</span><span class="tag">2</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/avatar3.png" alt="Xinlong-Chen&#039;s blog" height="28"></a><p class="is-size-7"><span>&copy; 2023 Xinlong-Chen</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-cn");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/mhchem.min.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
