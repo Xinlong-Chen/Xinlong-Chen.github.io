@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>MySQL - InnoDB 统计数据收集 - Xinlong-Chen&#039;s blog</title><link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#3273dc"><meta name="application-name" content="Xinlong Chen&#039;s blog"><meta name="msapplication-TileImage" content="/img/avatar3.png"><meta name="msapplication-TileColor" content="#3273dc"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Xinlong Chen&#039;s blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="统计数据存储方式  InnoDB提供了两种存储统计数据的方式：  永久性的统计数据：这种统计数据存储在磁盘上，也就是服务器重启之后这些统计数据还在。  非永久性的统计数据：这种统计数据存储在内存中，当服务器关闭时这些这些统计数据就都被清除掉了，等到服务器重启之后，在某些适当的场景下才会重新收集这些统计数据。"><meta property="og:type" content="blog"><meta property="og:title" content="MySQL - InnoDB 统计数据收集"><meta property="og:url" content="https://xinlong-chen.github.io/2023/08/31/mysql-optimizer-data-sample/"><meta property="og:site_name" content="Xinlong-Chen&#039;s blog"><meta property="og:description" content="统计数据存储方式  InnoDB提供了两种存储统计数据的方式：  永久性的统计数据：这种统计数据存储在磁盘上，也就是服务器重启之后这些统计数据还在。  非永久性的统计数据：这种统计数据存储在内存中，当服务器关闭时这些这些统计数据就都被清除掉了，等到服务器重启之后，在某些适当的场景下才会重新收集这些统计数据。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://xinlong-chen.github.io/2023/08/31/mysql-optimizer-data-sample/13-01.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/08/31/mysql-optimizer-data-sample/13-02.png"><meta property="og:image" content="https://xinlong-chen.github.io/2023/08/31/mysql-optimizer-data-sample/13-03.png"><meta property="article:published_time" content="2023-08-30T17:01:52.000Z"><meta property="article:modified_time" content="2023-08-30T15:41:30.524Z"><meta property="article:author" content="Xinlong-Chen"><meta property="article:tag" content="mysql"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://xinlong-chen.github.io/2023/08/31/mysql-optimizer-data-sample/13-01.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://xinlong-chen.github.io/2023/08/31/mysql-optimizer-data-sample/"},"headline":"MySQL - InnoDB 统计数据收集","image":["https://xinlong-chen.github.io/2023/08/31/mysql-optimizer-data-sample/13-01.png","https://xinlong-chen.github.io/2023/08/31/mysql-optimizer-data-sample/13-02.png","https://xinlong-chen.github.io/2023/08/31/mysql-optimizer-data-sample/13-03.png"],"datePublished":"2023-08-30T17:01:52.000Z","dateModified":"2023-08-30T15:41:30.524Z","author":{"@type":"Person","name":"Xinlong-Chen"},"publisher":{"@type":"Organization","name":"Xinlong-Chen's blog","logo":{"@type":"ImageObject","url":"https://xinlong-chen.github.io/img/avatar3.png"}},"description":"统计数据存储方式  InnoDB提供了两种存储统计数据的方式：  永久性的统计数据：这种统计数据存储在磁盘上，也就是服务器重启之后这些统计数据还在。  非永久性的统计数据：这种统计数据存储在内存中，当服务器关闭时这些这些统计数据就都被清除掉了，等到服务器重启之后，在某些适当的场景下才会重新收集这些统计数据。"}</script><link rel="canonical" href="https://xinlong-chen.github.io/2023/08/31/mysql-optimizer-data-sample/"><link rel="icon" href="/img/avatar3.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/avatar3.png" alt="Xinlong-Chen&#039;s blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-08-30T17:01:52.000Z" title="2023/8/31 上午1:01:52">2023-08-31</time>发表</span><span class="level-item"><time dateTime="2023-08-30T15:41:30.524Z" title="2023/8/30 下午11:41:30">2023-08-30</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/">数据库系统</a></span><span class="level-item">9 分钟读完 (大约1305个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">MySQL - InnoDB 统计数据收集</h1><div class="content"><h3 id="统计数据存储方式"><a href="#统计数据存储方式" class="headerlink" title="统计数据存储方式"></a>统计数据存储方式</h3><p>  <code>InnoDB</code>提供了两种存储统计数据的方式：</p>
+<ul>
+<li><p>永久性的统计数据：这种统计数据存储在磁盘上，也就是服务器重启之后这些统计数据还在。</p>
+</li>
+<li><p>非永久性的统计数据：这种统计数据存储在内存中，当服务器关闭时这些这些统计数据就都被清除掉了，等到服务器重启之后，在某些适当的场景下才会重新收集这些统计数据。</p>
+<span id="more"></span></li>
+</ul>
+<blockquote>
+<p><code>InnoDB</code>默认是以表为单位来收集和存储统计数据的:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE 表名 (...) Engine=InnoDB, STATS_PERSISTENT = (1|0);</span><br><span class="line">ALTER TABLE 表名 Engine=InnoDB, STATS_PERSISTENT = (1|0);</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h3 id="基于磁盘的永久性统计数据"><a href="#基于磁盘的永久性统计数据" class="headerlink" title="基于磁盘的永久性统计数据"></a>基于磁盘的永久性统计数据</h3><p>某个表以及该表索引的统计数据（磁盘上）存储到了<strong>两个表</strong>里。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; SHOW TABLES FROM mysql LIKE &#x27;innodb%&#x27;;</span><br><span class="line">+---------------------------+</span><br><span class="line">| Tables_in_mysql (innodb%) |</span><br><span class="line">+---------------------------+</span><br><span class="line">| innodb_index_stats        |</span><br><span class="line">| innodb_table_stats        |</span><br><span class="line">+---------------------------+</span><br><span class="line">2 rows in set (0.01 sec)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>innodb_table_stats</code>存储了关于表的统计数据，每一条记录对应着一个表的统计数据。</li>
+<li><code>innodb_index_stats</code>存储了关于索引的统计数据，每一条记录对应着一个索引的一个统计项的统计数据。</li>
+</ul>
+<h4 id="innodb-table-stats"><a href="#innodb-table-stats" class="headerlink" title="innodb_table_stats"></a>innodb_table_stats</h4><p><code>innodb_table_stats</code>表中的各个列作用：</p>
+<table>
+<thead>
+<tr>
+<th>字段名</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>database_name</code></td>
+<td>数据库名</td>
+</tr>
+<tr>
+<td><code>table_name</code></td>
+<td>表名</td>
+</tr>
+<tr>
+<td><code>last_update</code></td>
+<td>本条记录最后更新时间</td>
+</tr>
+<tr>
+<td><code>n_rows</code></td>
+<td>表中记录的条数</td>
+</tr>
+<tr>
+<td><code>clustered_index_size</code></td>
+<td>表的聚簇索引占用的页面数量</td>
+</tr>
+<tr>
+<td><code>sum_of_other_index_sizes</code></td>
+<td>表的其他索引占用的页面数量</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>主键：<code>(database_name,table_name)</code>，innodb_table_stats表的每条记录代表着一个表的统计信息</p>
+</blockquote>
+<h5 id="n-rows统计项的收集"><a href="#n-rows统计项的收集" class="headerlink" title="n_rows统计项的收集"></a>n_rows统计项的收集</h5><p>按照一定算法（并不是纯粹随机的）选取几个（<code>innodb_stats_persistent_sample_pages</code>）叶子节点页面，计算每个页面中主键值记录数量，然后计算平均一个页面中主键值的记录数量乘以全部叶子节点的数量就算是该表的<code>n_rows</code>值。</p>
+<ul>
+<li><code>innodb_stats_persistent_sample_pages</code> 值设置的越大，统计出的<code>n_rows</code>值越精确，统计耗时也越久；</li>
+<li><code>innodb_stats_persistent_sample_pages</code> 值设置的越小，统计出的<code>n_rows</code>值越不精确，统计耗时也越短。</li>
+<li><strong>该系统变量的默认值是<code>20</code>。</strong></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE 表名 (...) Engine=InnoDB, STATS_SAMPLE_PAGES = 具体的采样页面数量;</span><br><span class="line"></span><br><span class="line">ALTER TABLE 表名 Engine=InnoDB, STATS_SAMPLE_PAGES = 具体的采样页面数量;</span><br></pre></td></tr></table></figure>
+
+<h5 id="clustered-index-size和sum-of-other-index-sizes统计项的收集"><a href="#clustered-index-size和sum-of-other-index-sizes统计项的收集" class="headerlink" title="clustered_index_size和sum_of_other_index_sizes统计项的收集"></a>clustered_index_size和sum_of_other_index_sizes统计项的收集</h5><ul>
+<li>从数据字典里找到表的各个索引对应的根页面位置。</li>
+<li>从根页面的<code>Page Header</code>里找到叶子节点段和非叶子节点段对应的<code>Segment Header</code>。</li>
+<li>从叶子节点段和非叶子节点段的<code>Segment Header</code>中找到这两个段对应的<code>INODE Entry</code>结构。</li>
+</ul>
+<p><img src="/2023/08/31/mysql-optimizer-data-sample/13-01.png" alt="Segment Header"></p>
+<ul>
+<li>从对应的<code>INODE Entry</code>结构中可以找到该段对应所有零散的页面地址以及<code>FREE</code>、<code>NOT_FULL</code>、<code>FULL</code>链表的基节点。</li>
+</ul>
+<p><img src="/2023/08/31/mysql-optimizer-data-sample/13-02.png" alt="INODE Entry"></p>
+<ul>
+<li>直接统计零散的页面有多少个，然后从三个链表的<code>List Length</code>字段中读出该段占用的区的大小，每个区占用<code>64</code>个页，所以就可以统计出整个段占用的页面。</li>
+</ul>
+<p><img src="/2023/08/31/mysql-optimizer-data-sample/13-03.png" alt="List Base Node"></p>
+<ul>
+<li>分别计算聚簇索引的叶子结点段和非叶子节点段占用的页面数，它们的和就是<code>clustered_index_size</code>的值；同理把其余索引占用的页面数都算出来，加起来之后就是<code>sum_of_other_index_sizes</code>的值。</li>
+</ul>
+<h4 id="innodb-index-stats"><a href="#innodb-index-stats" class="headerlink" title="innodb_index_stats"></a>innodb_index_stats</h4><p><code>innodb_index_stats</code>表中的各个列作用：</p>
+<table>
+<thead>
+<tr>
+<th>字段名</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>database_name</code></td>
+<td>数据库名</td>
+</tr>
+<tr>
+<td><code>table_name</code></td>
+<td>表名</td>
+</tr>
+<tr>
+<td><code>index_name</code></td>
+<td>索引名</td>
+</tr>
+<tr>
+<td><code>last_update</code></td>
+<td>本条记录最后更新时间</td>
+</tr>
+<tr>
+<td><code>stat_name</code></td>
+<td>统计项的名称</td>
+</tr>
+<tr>
+<td><code>stat_value</code></td>
+<td>对应的统计项的值</td>
+</tr>
+<tr>
+<td><code>sample_size</code></td>
+<td>为生成统计数据而采样的页面数量</td>
+</tr>
+<tr>
+<td><code>stat_description</code></td>
+<td>对应的统计项的描述</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>主键：(database_name,table_name,index_name,stat_name)&#96;，innodb_index_stats表的每条记录代表着一个索引的一个统计项。</p>
+</blockquote>
+<p><code>stat_name</code>值：</p>
+<ul>
+<li><code>n_leaf_pages</code>：表示该索引的叶子节点占用多少页面。</li>
+<li><code>size</code>：表示该索引共占用多少页面。</li>
+<li><code>n_diff_pfxNN</code>：表示对应的索引列不重复的值有多少。</li>
+</ul>
+<h4 id="定期更新统计数据"><a href="#定期更新统计数据" class="headerlink" title="定期更新统计数据"></a>定期更新统计数据</h4><ul>
+<li>开启<code>innodb_stats_auto_recalc</code>。如果发生变动的记录数量超过了表大小的<code>10%</code>，并且自动重新计算统计数据的功能是打开的，那么服务器会重新进行一次统计数据的计算，并且更新<code>innodb_table_stats</code>和<code>innodb_index_stats</code>表。<strong>该过程是异步发生的。</strong></li>
+<li>手动调用<code>ANALYZE TABLE</code>语句来更新统计信息。<strong>立即重新计算统计数据</strong>（<strong>同步的</strong>）。</li>
+</ul>
+<h3 id="基于内存的非永久性统计数据"><a href="#基于内存的非永久性统计数据" class="headerlink" title="基于内存的非永久性统计数据"></a>基于内存的非永久性统计数据</h3><p>非永久性的统计数据采样的页面数量是由<code>innodb_stats_transient_sample_pages</code>控制的，这个系统变量的默认值是<code>8</code>。</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>MySQL - InnoDB 统计数据收集</p><p><a href="https://xinlong-chen.github.io/2023/08/31/mysql-optimizer-data-sample/">https://xinlong-chen.github.io/2023/08/31/mysql-optimizer-data-sample/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Xinlong-Chen</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-08-31</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-08-30</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="" rel="noopener" target="_blank" title="CC BY-NC-SA 4.0" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/mysql/">mysql</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/08/30/mysql-optimizer/"><span class="level-item">MySQL - MySQL基于成本的优化</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><script src="https://utteranc.es/client.js" repo="Xinlong-Chen/Xinlong-Chen.github.io" issue-term="pathname" label="some-issue-label" theme="github-light" crossorigin="anonymous" async></script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="/img/avatar2.png" alt="Xinlong Chen"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Xinlong Chen</p><p class="is-size-6 is-block">os | db</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Canton</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">104</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories"><p class="title">10</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags"><p class="title">21</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/Xinlong-Chen" target="_blank" rel="noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/Xinlong-Chen"><i class="fab fa-github"></i></a></div></div></div><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#统计数据存储方式"><span class="level-left"><span class="level-item">1</span><span class="level-item">统计数据存储方式</span></span></a></li><li><a class="level is-mobile" href="#基于磁盘的永久性统计数据"><span class="level-left"><span class="level-item">2</span><span class="level-item">基于磁盘的永久性统计数据</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#innodb-table-stats"><span class="level-left"><span class="level-item">2.1</span><span class="level-item">innodb_table_stats</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#n-rows统计项的收集"><span class="level-left"><span class="level-item">2.1.1</span><span class="level-item">n_rows统计项的收集</span></span></a></li><li><a class="level is-mobile" href="#clustered-index-size和sum-of-other-index-sizes统计项的收集"><span class="level-left"><span class="level-item">2.1.2</span><span class="level-item">clustered_index_size和sum_of_other_index_sizes统计项的收集</span></span></a></li></ul></li><li><a class="level is-mobile" href="#innodb-index-stats"><span class="level-left"><span class="level-item">2.2</span><span class="level-item">innodb_index_stats</span></span></a></li><li><a class="level is-mobile" href="#定期更新统计数据"><span class="level-left"><span class="level-item">2.3</span><span class="level-item">定期更新统计数据</span></span></a></li></ul></li><li><a class="level is-mobile" href="#基于内存的非永久性统计数据"><span class="level-left"><span class="level-item">3</span><span class="level-item">基于内存的非永久性统计数据</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div><div class="card widget" data-type="links"><div class="card-content"><div class="menu"><h3 class="menu-label">链接</h3><ul class="menu-list"><li><a class="level is-mobile" href="https://www.cnblogs.com/cxl-" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">cnblog</span></span><span class="level-right"><span class="level-item tag">www.cnblogs.com</span></span></a></li><li><a class="level is-mobile" href="https://blog.csdn.net/hrbust_cxl" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">csdn</span></span><span class="level-right"><span class="level-item tag">blog.csdn.net</span></span></a></li></ul></div></div></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/C/"><span class="level-start"><span class="level-item">C++</span></span><span class="level-end"><span class="level-item tag">23</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">分布式系统</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%89%8D%E7%AB%AF/"><span class="level-start"><span class="level-item">前端</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/"><span class="level-start"><span class="level-item">工具使用</span></span><span class="level-end"><span class="level-item tag">11</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">操作系统</span></span><span class="level-end"><span class="level-item tag">40</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/"><span class="level-start"><span class="level-item">数据库系统</span></span><span class="level-end"><span class="level-item tag">12</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%9D%82%E4%B8%83%E6%9D%82%E5%85%AB/"><span class="level-start"><span class="level-item">杂七杂八</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/%E7%A1%AC%E4%BB%B6/"><span class="level-start"><span class="level-item">硬件</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/%E7%AE%97%E6%B3%95/"><span class="level-start"><span class="level-item">算法</span></span><span class="level-end"><span class="level-item tag">6</span></span></a></li><li><a class="level is-mobile" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/"><span class="level-start"><span class="level-item">计算机网络</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></div></div></div><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">最新文章</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-08-30T17:01:52.000Z">2023-08-31</time></p><p class="title"><a href="/2023/08/31/mysql-optimizer-data-sample/">MySQL - InnoDB 统计数据收集</a></p><p class="categories"><a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/">数据库系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-08-30T13:55:52.000Z">2023-08-30</time></p><p class="title"><a href="/2023/08/30/mysql-optimizer/">MySQL - MySQL基于成本的优化</a></p><p class="categories"><a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/">数据库系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-08-29T06:55:52.000Z">2023-08-29</time></p><p class="title"><a href="/2023/08/29/mysql-inside-join/">MySQL - 连接（join）</a></p><p class="categories"><a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/">数据库系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-08-28T15:55:52.000Z">2023-08-28</time></p><p class="title"><a href="/2023/08/28/mysql-select-from-single-table/">MySQL - 单表访问方法</a></p><p class="categories"><a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/">数据库系统</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-08-26T13:27:52.000Z">2023-08-26</time></p><p class="title"><a href="/2023/08/26/mysql-catalog/">MySQL - 数据目录</a></p><p class="categories"><a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/">数据库系统</a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">归档</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2023/"><span class="level-start"><span class="level-item">2023</span></span><span class="level-end"><span class="level-item tag">75</span></span></a></li><li><a class="level is-mobile" href="/archives/2022/"><span class="level-start"><span class="level-item">2022</span></span><span class="level-end"><span class="level-item tag">25</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/"><span class="level-start"><span class="level-item">2021</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/algorithm/"><span class="tag">algorithm</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cmu15445/"><span class="tag">cmu15445</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cpp/"><span class="tag">cpp</span><span class="tag">11</span></a></div><div class="control"><a class="tags has-addons" href="/tags/debug/"><span class="tag">debug</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/effective-C/"><span class="tag">effective C++</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/hitos/"><span class="tag">hitos</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux0-11/"><span class="tag">linux0.11</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux%E4%BD%BF%E7%94%A8/"><span class="tag">linux使用</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux%E7%BC%96%E7%A8%8B/"><span class="tag">linux编程</span><span class="tag">8</span></a></div><div class="control"><a class="tags has-addons" href="/tags/missing-semester/"><span class="tag">missing semester</span><span class="tag">11</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mit6-824/"><span class="tag">mit6.824</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mit6-s081/"><span class="tag">mit6.s081</span><span class="tag">9</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mysql/"><span class="tag">mysql</span><span class="tag">11</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ostep/"><span class="tag">ostep</span><span class="tag">13</span></a></div><div class="control"><a class="tags has-addons" href="/tags/qt/"><span class="tag">qt</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/stl/"><span class="tag">stl</span><span class="tag">10</span></a></div><div class="control"><a class="tags has-addons" href="/tags/xv6/"><span class="tag">xv6</span><span class="tag">9</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"><span class="tag">分布式系统</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%90%86%E8%AE%BA/"><span class="tag">操作系统理论</span><span class="tag">13</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%A0%91%E8%8E%93%E6%B4%BE/"><span class="tag">树莓派</span><span class="tag">2</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/avatar3.png" alt="Xinlong-Chen&#039;s blog" height="28"></a><p class="is-size-7"><span>&copy; 2023 Xinlong-Chen</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-cn");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/mhchem.min.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
